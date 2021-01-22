@@ -1,0 +1,75 @@
+{
+	"name": "CeviGeboektCombine",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "VB_CSV",
+						"type": "DatasetReference"
+					},
+					"name": "VB"
+				},
+				{
+					"dataset": {
+						"referenceName": "AP_CSV",
+						"type": "DatasetReference"
+					},
+					"name": "AP"
+				},
+				{
+					"dataset": {
+						"referenceName": "OD_CSV",
+						"type": "DatasetReference"
+					},
+					"name": "OD"
+				},
+				{
+					"dataset": {
+						"referenceName": "SD_CSV",
+						"type": "DatasetReference"
+					},
+					"name": "SD"
+				},
+				{
+					"dataset": {
+						"referenceName": "BI_CSV",
+						"type": "DatasetReference"
+					},
+					"name": "BI"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData_nonbudget",
+						"type": "DatasetReference"
+					},
+					"name": "VBResults"
+				}
+			],
+			"transformations": [
+				{
+					"name": "TranslateVebruiktOntvangen"
+				},
+				{
+					"name": "VBAP"
+				},
+				{
+					"name": "VBAPOD"
+				},
+				{
+					"name": "VBAPODSD"
+				},
+				{
+					"name": "VBAPODSDBI"
+				},
+				{
+					"name": "FilterOnYearAndCodeGeboekt"
+				}
+			],
+			"script": "source(output(\n\t\tJaar as string,\n\t\tVolgnummer as string,\n\t\tCompany as string,\n\t\tDossier as string,\n\t\tBetalende as string,\n\t\t{Algemene rekening} as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\t{Bestelbon jaar} as string,\n\t\t{Bestelbon nummer} as string,\n\t\t{Aanwinst jaar} as string,\n\t\t{Aanwinst nummer} as string,\n\t\tCode as string,\n\t\tBedrag as string,\n\t\t{Verbruikt/Ontvangen} as string,\n\t\tOmschrijving as string,\n\t\tDatum as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\t{Faktuur jaar} as string,\n\t\t{Faktuur nummer} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> VB\nsource(output(\n\t\tJaar as string,\n\t\t{Strategische doelstelling} as string,\n\t\t{Operationele doelstelling} as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tCommentaar as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string,\n\t\tBudgethouder as string,\n\t\tAanvang as string,\n\t\tVoltooiing as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:['invoer/AP*.csv']) ~> AP\nsource(output(\n\t\tJaar as string,\n\t\t{Code strategische doelstelling} as string,\n\t\t{Label strategische doelstelling} as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tCommentaar as string,\n\t\tPrioritair as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> OD\nsource(output(\n\t\tBoekjaar as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tVerantwoordelijke as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> SD\nsource(output(\n\t\tBoekjaar as string,\n\t\tBeleidsitem as string,\n\t\tBeleidsveld as string,\n\t\tOmschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> BI\nFilterOnYearAndCodeGeboekt derive({Verbruikt/Ontvangen} = iif({Verbruikt/Ontvangen} === 'U', 'Charges', iif({Verbruikt/Ontvangen}==='O','Earnings','Unknown')),\n\t\tPeriodSliceCode = concat('Geboekt_',Jaar),\n\t\tFreeField03 = concat({Bestelbon jaar},'/',{Bestelbon nummer}),\n\t\tFreeField04 = concat({Aanwinst jaar},'/',{Aanwinst nummer}),\n\t\tFreeField05 = concat({Faktuur jaar},'/',{Faktuur nummer}),\n\t\tDocumentUrl = concat({Faktuur jaar},'/',{Faktuur nummer},'.pdf')) ~> TranslateVebruiktOntvangen\nTranslateVebruiktOntvangen, AP join(Actieplan == AP@Code\n\t&& VB@Jaar == AP@Jaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> VBAP\nVBAP, OD join({Operationele doelstelling} == OD@Label\n\t&& AP@Jaar == OD@Jaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> VBAPOD\nVBAPOD, SD join({Strategische doelstelling} == SD@Label\n\t&& AP@Jaar == Boekjaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> VBAPODSD\nVBAPODSD, BI join(VB@Beleidsitem == BI@Beleidsitem\n\t&& VB@Jaar == BI@Boekjaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> VBAPODSDBI\nVB filter(!(Code ==='BAWD' || Code === 'BCOR')) ~> FilterOnYearAndCodeGeboekt\nVBAPODSDBI sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tPeriodSliceCode,\n\t\tFinancialID = {Algemene rekening},\n\t\tLineItemTypeCode = {Verbruikt/Ontvangen},\n\t\tAmount = Bedrag,\n\t\tProjectCode = Actie,\n\t\tProjectCode_1 = Actieplan,\n\t\tProjectCode_2 = OD@Label,\n\t\tProjectCode_3 = SD@Label,\n\t\tProjectCode_4 = Company,\n\t\tProjectCode_5 = VB@Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tCode = VB@Beleidsitem,\n\t\tDescription = BI@Omschrijving,\n\t\tBookYear = VB@Jaar,\n\t\tBookDateTime = Datum,\n\t\tVersion = Volgnummer,\n\t\tVersionDescription = VB@Omschrijving,\n\t\tFreeField01 = Dossier,\n\t\tFreeField02 = Betalende,\n\t\tFreeField03,\n\t\tFreeField04,\n\t\tFreeField05,\n\t\tFreeField06 = VB@Code\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> VBResults"
+		}
+	}
+}

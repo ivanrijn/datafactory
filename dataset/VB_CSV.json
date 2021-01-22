@@ -1,0 +1,126 @@
+{
+	"name": "VB_CSV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzurePPFBlobStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "VB_20201203_1149_bbc.csv",
+				"folderPath": "invoer",
+				"container": "ppfcontainerdenderleeuw"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Jaar",
+				"type": "String"
+			},
+			{
+				"name": "Volgnummer",
+				"type": "String"
+			},
+			{
+				"name": "Company",
+				"type": "String"
+			},
+			{
+				"name": "Dossier",
+				"type": "String"
+			},
+			{
+				"name": "Betalende",
+				"type": "String"
+			},
+			{
+				"name": "Algemene rekening",
+				"type": "String"
+			},
+			{
+				"name": "Beleidsitem",
+				"type": "String"
+			},
+			{
+				"name": "Kostenplaats",
+				"type": "String"
+			},
+			{
+				"name": "Investeringsproject",
+				"type": "String"
+			},
+			{
+				"name": "Investeringssubproject",
+				"type": "String"
+			},
+			{
+				"name": "Actieplan",
+				"type": "String"
+			},
+			{
+				"name": "Actie",
+				"type": "String"
+			},
+			{
+				"name": "Bestelbon jaar",
+				"type": "String"
+			},
+			{
+				"name": "Bestelbon nummer",
+				"type": "String"
+			},
+			{
+				"name": "Aanwinst jaar",
+				"type": "String"
+			},
+			{
+				"name": "Aanwinst nummer",
+				"type": "String"
+			},
+			{
+				"name": "Code",
+				"type": "String"
+			},
+			{
+				"name": "Bedrag",
+				"type": "String"
+			},
+			{
+				"name": "Verbruikt/Ontvangen",
+				"type": "String"
+			},
+			{
+				"name": "Omschrijving",
+				"type": "String"
+			},
+			{
+				"name": "Datum",
+				"type": "String"
+			},
+			{
+				"name": "Budgethouder",
+				"type": "String"
+			},
+			{
+				"name": "Sector",
+				"type": "String"
+			},
+			{
+				"name": "Faktuur jaar",
+				"type": "String"
+			},
+			{
+				"name": "Faktuur nummer",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

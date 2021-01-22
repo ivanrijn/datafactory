@@ -1,0 +1,178 @@
+{
+	"name": "TempCombinedBudget",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Jaar_opmaak",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Algemene_rekening",
+				"type": "varchar"
+			},
+			{
+				"name": "Beleidsitem",
+				"type": "varchar"
+			},
+			{
+				"name": "Kostenplaats",
+				"type": "varchar"
+			},
+			{
+				"name": "Investeringsproject",
+				"type": "varchar"
+			},
+			{
+				"name": "Investeringssubproject",
+				"type": "varchar"
+			},
+			{
+				"name": "Actieplan",
+				"type": "varchar"
+			},
+			{
+				"name": "Actie",
+				"type": "varchar"
+			},
+			{
+				"name": "Company",
+				"type": "varchar"
+			},
+			{
+				"name": "UF",
+				"type": "varchar"
+			},
+			{
+				"name": "Omschrijving",
+				"type": "varchar"
+			},
+			{
+				"name": "Budgethouder",
+				"type": "varchar"
+			},
+			{
+				"name": "Sector",
+				"type": "varchar"
+			},
+			{
+				"name": "Groep",
+				"type": "varchar"
+			},
+			{
+				"name": "Dienst",
+				"type": "varchar"
+			},
+			{
+				"name": "Initieel",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Totaal",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Totaal_wijz",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Totaal_aanp",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Totaal_raming",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Totaal_amjp",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Budget_mjp",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Budget_mjp1",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Budget_mjp2",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Budget_mjp3",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Budget_mjp4",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Budget_mjp5",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Overdracht",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Overgedragen",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Beschikbaar",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Code",
+				"type": "varchar"
+			},
+			{
+				"name": "SD_Label",
+				"type": "varchar"
+			},
+			{
+				"name": "OD_Label",
+				"type": "varchar"
+			},
+			{
+				"name": "Beleidsveld",
+				"type": "varchar"
+			},
+			{
+				"name": "hash",
+				"type": "varchar"
+			},
+			{
+				"name": "BG_Omschrijving",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "tempcombinedbudget"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

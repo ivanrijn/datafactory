@@ -1,0 +1,187 @@
+{
+	"name": "uitvoer_json",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzurePPFBlobStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "uitvoer.json",
+				"folderPath": "uitvoer",
+				"container": "ppfcontainerdenderleeuw"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"Code": {
+					"type": "string"
+				},
+				"Description": {
+					"type": "string"
+				},
+				"SyncID": {
+					"type": "integer"
+				},
+				"FinancialId": {
+					"type": "string"
+				},
+				"PeriodSliceCode": {
+					"type": "string"
+				},
+				"LineItemTypeCode": {
+					"type": "string"
+				},
+				"Amount": {
+					"type": "number"
+				},
+				"GroupCode": {
+					"type": "string"
+				},
+				"GroupCode_1": {
+					"type": "null"
+				},
+				"GroupCode_2": {
+					"type": "null"
+				},
+				"GroupCode_3": {
+					"type": "null"
+				},
+				"GroupDescription": {
+					"type": "string"
+				},
+				"ProjectCode": {
+					"type": "string"
+				},
+				"ProjectCode_1": {
+					"type": "string"
+				},
+				"ProjectCode_2": {
+					"type": "string"
+				},
+				"ProjectCode_3": {
+					"type": "string"
+				},
+				"ProjectCode_4": {
+					"type": "string"
+				},
+				"ProjectCode_5": {
+					"type": "string"
+				},
+				"ProjectCode_6": {
+					"type": "string"
+				},
+				"ProjectCode_7": {
+					"type": "string"
+				},
+				"ProjectCode_8": {
+					"type": "string"
+				},
+				"ProjectCode_9": {
+					"type": "string"
+				},
+				"ProjectCode_10": {
+					"type": "string"
+				},
+				"ProjectCode_11": {
+					"type": "string"
+				},
+				"ProjectCode_12": {
+					"type": "string"
+				},
+				"ProjectCode_13": {
+					"type": "string"
+				},
+				"ProjectCode_14": {
+					"type": "string"
+				},
+				"ProjectCode_15": {
+					"type": "string"
+				},
+				"ProjectCode_16": {
+					"type": "string"
+				},
+				"ProjectCode_17": {
+					"type": "string"
+				},
+				"ProjectCode_18": {
+					"type": "string"
+				},
+				"ProjectCode_19": {
+					"type": "string"
+				},
+				"ProjectCode_20": {
+					"type": "string"
+				},
+				"ProjectCode_21": {
+					"type": "string"
+				},
+				"ProjectCode_22": {
+					"type": "string"
+				},
+				"ProjectCode_23": {
+					"type": "string"
+				},
+				"ProjectCode_24": {
+					"type": "string"
+				},
+				"BookYear": {
+					"type": "integer"
+				},
+				"Version": {
+					"type": "string"
+				},
+				"VersionDescription": {
+					"type": "string"
+				},
+				"FreeField01": {
+					"type": "string"
+				},
+				"FreeField02": {
+					"type": "string"
+				},
+				"FreeField03": {
+					"type": "string"
+				},
+				"FreeField04": {
+					"type": "string"
+				},
+				"FreeField05": {
+					"type": "string"
+				},
+				"FreeField06": {
+					"type": "string"
+				},
+				"FreeField07": {
+					"type": "string"
+				},
+				"FreeField08": {
+					"type": "string"
+				},
+				"Administration": {
+					"type": "string"
+				},
+				"DocumentUrl": {
+					"type": "string"
+				},
+				"Mutation": {
+					"type": "number"
+				},
+				"BookDateTime": {
+					"type": "string"
+				},
+				"GlobalID": {
+					"type": "string"
+				},
+				"IncStr": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

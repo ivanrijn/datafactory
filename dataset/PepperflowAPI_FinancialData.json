@@ -1,0 +1,25 @@
+{
+	"name": "PepperflowAPI_FinancialData",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PPF API",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"APIKey": {
+				"type": "string",
+				"defaultValue": "0daed34d-f1ba-448f-81d2-2d643ce6cf1b"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat('UpdateFinancialData/v3/',dataset().APIKey)",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

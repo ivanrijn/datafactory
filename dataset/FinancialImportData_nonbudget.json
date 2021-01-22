@@ -1,0 +1,24 @@
+{
+	"name": "FinancialImportData_nonbudget",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzurePPFBlobStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"folderPath": "uitvoer_nonbudget",
+				"container": "ppfcontainerdenderleeuw"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

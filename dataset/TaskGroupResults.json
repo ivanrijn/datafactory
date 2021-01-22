@@ -1,0 +1,20 @@
+{
+	"name": "TaskGroupResults",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzurePPFBlobStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"folderPath": "TaskGroup",
+				"container": "ppfcontainerdenderleeuw"
+			}
+		},
+		"schema": {}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

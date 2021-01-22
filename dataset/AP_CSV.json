@@ -1,0 +1,78 @@
+{
+	"name": "AP_CSV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzurePPFBlobStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "AP_20201203_1149_bbc.csv",
+				"folderPath": "invoer",
+				"container": "ppfcontainerdenderleeuw"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Jaar",
+				"type": "String"
+			},
+			{
+				"name": "Strategische doelstelling",
+				"type": "String"
+			},
+			{
+				"name": "Operationele doelstelling",
+				"type": "String"
+			},
+			{
+				"name": "Code",
+				"type": "String"
+			},
+			{
+				"name": "Label",
+				"type": "String"
+			},
+			{
+				"name": "Korte omschrijving",
+				"type": "String"
+			},
+			{
+				"name": "Lange omschrijving",
+				"type": "String"
+			},
+			{
+				"name": "Commentaar",
+				"type": "String"
+			},
+			{
+				"name": "Verantwoordelijke",
+				"type": "String"
+			},
+			{
+				"name": "Opvolger",
+				"type": "String"
+			},
+			{
+				"name": "Budgethouder",
+				"type": "String"
+			},
+			{
+				"name": "Aanvang",
+				"type": "String"
+			},
+			{
+				"name": "Voltooiing",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

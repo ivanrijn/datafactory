@@ -1,0 +1,152 @@
+{
+	"name": "CeviBudgetLinesSplit",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DeltaTable",
+						"type": "DatasetReference"
+					},
+					"name": "JoinedBudgetLines"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					},
+					"name": "RegelsInitieel"
+				},
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					},
+					"name": "RegelsTotaal"
+				},
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					},
+					"name": "RegelsOvergedragen"
+				},
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					},
+					"name": "RegelsOverdracht"
+				},
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					},
+					"name": "RegelsMjp5"
+				},
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					},
+					"name": "RegelsMjp4"
+				},
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					},
+					"name": "RegelsMjp3"
+				},
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					},
+					"name": "RegelsMjp2"
+				},
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					},
+					"name": "RegelsMjp1"
+				},
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					},
+					"name": "RegelsMjp"
+				},
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					},
+					"name": "RegelsAmjp"
+				},
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					},
+					"name": "RegelsAanpassingen"
+				},
+				{
+					"dataset": {
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					},
+					"name": "Regelswijzigingen"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AddPSCTotaal"
+				},
+				{
+					"name": "AddPSCWijzingen"
+				},
+				{
+					"name": "AddPSCAanpassingen"
+				},
+				{
+					"name": "AddPSCAmjp"
+				},
+				{
+					"name": "AddPSCMjp"
+				},
+				{
+					"name": "AddPSCMjp1"
+				},
+				{
+					"name": "AddPSCMjp2"
+				},
+				{
+					"name": "AddPSCMjp3"
+				},
+				{
+					"name": "AddPSCMjp4"
+				},
+				{
+					"name": "AddPSCMjp5"
+				},
+				{
+					"name": "AddPSCOverdracht"
+				},
+				{
+					"name": "AddPSCOvergedragen"
+				},
+				{
+					"name": "AddPSCInitieel"
+				}
+			],
+			"script": "source(output(\n\t\tJaar_opmaak as integer,\n\t\tAlgemene_rekening as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\tUF as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as double,\n\t\tTotaal as double,\n\t\tTotaal_wijz as double,\n\t\tTotaal_aanp as double,\n\t\tTotaal_raming as double,\n\t\tTotaal_amjp as double,\n\t\tBudget_mjp as double,\n\t\tBudget_mjp1 as double,\n\t\tBudget_mjp2 as double,\n\t\tBudget_mjp3 as double,\n\t\tBudget_mjp4 as double,\n\t\tBudget_mjp5 as double,\n\t\tOverdracht as double,\n\t\tOvergedragen as double,\n\t\tBeschikbaar as double,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string,\n\t\tBG_Omschrijving as string,\n\t\toperation as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> JoinedBudgetLines\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Initieel_', toString({Jaar_opmaak}))) ~> AddPSCTotaal\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Wijz_', toString({Jaar_opmaak}))) ~> AddPSCWijzingen\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Aanp_', toString({Jaar_opmaak}))) ~> AddPSCAanpassingen\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Amjp_', toString({Jaar_opmaak}))) ~> AddPSCAmjp\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Mjp_', toString({Jaar_opmaak}))) ~> AddPSCMjp\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Mjp_', toString(toInteger({Jaar_opmaak})+1))) ~> AddPSCMjp1\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Mjp_', toString(toInteger({Jaar_opmaak})+2))) ~> AddPSCMjp2\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Mjp_', toString(toInteger({Jaar_opmaak})+3))) ~> AddPSCMjp3\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Mjp_', toString(toInteger({Jaar_opmaak})+4))) ~> AddPSCMjp4\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Mjp_', toString(toInteger({Jaar_opmaak})+5))) ~> AddPSCMjp5\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Overdracht_', toString({Jaar_opmaak}))) ~> AddPSCOverdracht\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Overgedragen_', toString({Jaar_opmaak}))) ~> AddPSCOvergedragen\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Totaal_', toString({Jaar_opmaak}))) ~> AddPSCInitieel\nAddPSCInitieel sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Initieel,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t)) ~> RegelsInitieel\nAddPSCTotaal sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Totaal,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsTotaal\nAddPSCOvergedragen sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Overgedragen,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsOvergedragen\nAddPSCOverdracht sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Overdracht,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsOverdracht\nAddPSCMjp5 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Budget_mjp5,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsMjp5\nAddPSCMjp4 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Budget_mjp4,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsMjp4\nAddPSCMjp3 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Budget_mjp3,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsMjp3\nAddPSCMjp2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Budget_mjp2,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsMjp2\nAddPSCMjp1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Budget_mjp1,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsMjp1\nAddPSCMjp sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Budget_mjp,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsMjp\nAddPSCAmjp sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Totaal_amjp,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsAmjp\nAddPSCAanpassingen sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Totaal_aanp,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsAanpassingen\nAddPSCWijzingen sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Totaal_wijz,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Regelswijzigingen"
+		}
+	}
+}

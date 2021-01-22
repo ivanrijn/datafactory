@@ -1,0 +1,366 @@
+{
+	"name": "CeviBudgetTestDelta",
+	"properties": {
+		"activities": [
+			{
+				"name": "CeviBudgetCombine",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "CeviBudgetCombine",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "CeviBudgetSplit",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "CeviBudgetCombine",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "CeviBudgetSplit",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "CeviSendBudgetData",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "CeviBudgetSplit",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "uitvoer",
+							"wildcardFileName": "*.csv",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "RestSink",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": 10,
+						"requestMethod": "POST",
+						"writeBatchSize": 10000,
+						"httpCompressionType": "none"
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "PeriodSliceCode",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['PeriodSliceCode']"
+								}
+							},
+							{
+								"source": {
+									"name": "FinancialID",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['FinancialID']"
+								}
+							},
+							{
+								"source": {
+									"name": "LineItemTypeCode",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['LineItemTypeCode']"
+								}
+							},
+							{
+								"source": {
+									"name": "Amount",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['Amount']"
+								}
+							},
+							{
+								"source": {
+									"name": "ProjectCode",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['ProjectCode']"
+								}
+							},
+							{
+								"source": {
+									"name": "ProjectCode_1",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['ProjectCode_1']"
+								}
+							},
+							{
+								"source": {
+									"name": "ProjectCode_2",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['ProjectCode_2']"
+								}
+							},
+							{
+								"source": {
+									"name": "ProjectCode_3",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['ProjectCode_3']"
+								}
+							},
+							{
+								"source": {
+									"name": "ProjectCode_4",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['ProjectCode_4']"
+								}
+							},
+							{
+								"source": {
+									"name": "ProjectCode_5",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['ProjectCode_5']"
+								}
+							},
+							{
+								"source": {
+									"name": "ProjectCode_6",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['ProjectCode_6']"
+								}
+							},
+							{
+								"source": {
+									"name": "ProjectCode_7",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['ProjectCode_7']"
+								}
+							},
+							{
+								"source": {
+									"name": "ProjectCode_8",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['ProjectCode_8']"
+								}
+							},
+							{
+								"source": {
+									"name": "ProjectCode_9",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['ProjectCode_9']"
+								}
+							},
+							{
+								"source": {
+									"name": "Code",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['Code']"
+								}
+							},
+							{
+								"source": {
+									"name": "Description",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['Description']"
+								}
+							},
+							{
+								"source": {
+									"name": "BookYear",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['BookYear']"
+								}
+							},
+							{
+								"source": {
+									"name": "BookDateTime",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['BookDateTime']"
+								}
+							},
+							{
+								"source": {
+									"name": "Version",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['Version']"
+								}
+							},
+							{
+								"source": {
+									"name": "VersionDescription",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['VersionDescription']"
+								}
+							},
+							{
+								"source": {
+									"name": "FreeField01",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['FreeField01']"
+								}
+							},
+							{
+								"source": {
+									"name": "FreeField02",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['FreeField02']"
+								}
+							},
+							{
+								"source": {
+									"name": "FreeField03",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['FreeField03']"
+								}
+							},
+							{
+								"source": {
+									"name": "FreeField04",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['FreeField04']"
+								}
+							},
+							{
+								"source": {
+									"name": "FreeField05",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['FreeField05']"
+								}
+							},
+							{
+								"source": {
+									"name": "FreeField06",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['FreeField06']"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "FinancialImportData",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "PepperflowAPI_FinancialData",
+						"type": "DatasetReference",
+						"parameters": {
+							"APIKey": "0daed34d-f1ba-448f-81d2-2d643ce6cf1b"
+						}
+					}
+				]
+			},
+			{
+				"name": "CeviProcessDeltaSuccess",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "CeviSendBudgetData",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "CeviDeltaProcessSuccess",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"variables": {
+			"timestamp": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-01-19T16:01:42Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

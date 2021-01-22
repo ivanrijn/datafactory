@@ -1,0 +1,593 @@
+{
+	"name": "CeviBudgetCombine",
+	"properties": {
+		"activities": [
+			{
+				"name": "SinkCombinedIntoTemp",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "CeviBudgetLinesCombine",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "temp",
+							"wildcardFileName": "tempcombinedbudgetlines*.csv",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE [dbo].[deltacombinedbudget]",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "Jaar opmaak",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Jaar_opmaak",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "Algemene rekening",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Algemene_rekening",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Beleidsitem",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Beleidsitem",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Kostenplaats",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Kostenplaats",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Investeringsproject",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Investeringsproject",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Investeringssubproject",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Investeringssubproject",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Actieplan",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Actieplan",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Actie",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Actie",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Company",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Company",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "U/F",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "UF",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Omschrijving",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Omschrijving",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Budgethouder",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Budgethouder",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Sector",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Sector",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Groep",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Groep",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Dienst",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Dienst",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Initieel",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Initieel",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Totaal",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Totaal",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Totaal wijz",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Totaal_wijz",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Totaal aanp",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Totaal_aanp",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Totaal raming",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Totaal_raming",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Totaal amjp",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Totaal_amjp",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Budget mjp",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Budget_mjp",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Budget mjp1",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Budget_mjp1",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Budget mjp2",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Budget_mjp2",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Budget mjp3",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Budget_mjp3",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Budget mjp4",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Budget_mjp4",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Budget mjp5",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Budget_mjp5",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Overdracht",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Overdracht",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Overgedragen",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Overgedragen",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Beschikbaar",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Beschikbaar",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Code",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Code",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "SD_Label",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "SD_Label",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "OD_Label",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "OD_Label",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Beleidsveld",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "Beleidsveld",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "hash",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "hash",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "BG_Omschrijving",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "BG_Omschrijving",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "BudgetJoinTMP",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "TempCombinedBudget",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "FindDeltas",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "SinkCombinedIntoTemp",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "FillDeltaTable",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "CeviBudgetLinesCombine",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "ClearBudgetLinesCombined",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "CeviBudgetLinesCombine",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "ClearBudgetLinesCombined",
+				"type": "Delete",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "BudgetJoinTMP",
+						"type": "DatasetReference"
+					},
+					"enableLogging": false,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"wildcardFileName": "tempcombinedbudgetlines*.csv",
+						"enablePartitionDiscovery": false
+					}
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2021-01-19T13:51:37Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

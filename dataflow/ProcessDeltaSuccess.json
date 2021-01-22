@@ -1,0 +1,45 @@
+{
+	"name": "ProcessDeltaSuccess",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DeltaTable",
+						"type": "DatasetReference"
+					},
+					"name": "deltatable"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "CombinedBudgetLinesTable",
+						"type": "DatasetReference"
+					},
+					"name": "SinkUpdatesIntoCurrent"
+				},
+				{
+					"dataset": {
+						"referenceName": "CombinedBudgetLinesTable",
+						"type": "DatasetReference"
+					},
+					"name": "SinkNewIntoCurrent"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterUpdates"
+				},
+				{
+					"name": "FilterNew"
+				},
+				{
+					"name": "AlterRow1"
+				}
+			],
+			"script": "source(output(\n\t\tJaar_opmaak as integer,\n\t\tAlgemene_rekening as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\tUF as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as double,\n\t\tTotaal as double,\n\t\tTotaal_wijz as double,\n\t\tTotaal_aanp as double,\n\t\tTotaal_raming as double,\n\t\tTotaal_amjp as double,\n\t\tBudget_mjp as double,\n\t\tBudget_mjp1 as double,\n\t\tBudget_mjp2 as double,\n\t\tBudget_mjp3 as double,\n\t\tBudget_mjp4 as double,\n\t\tBudget_mjp5 as double,\n\t\tOverdracht as double,\n\t\tOvergedragen as double,\n\t\tBeschikbaar as double,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string,\n\t\tBG_Omschrijving as string,\n\t\toperation as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> deltatable\ndeltatable filter(operation == 'update') ~> FilterUpdates\ndeltatable filter(operation == 'create') ~> FilterNew\nFilterUpdates alterRow(updateIf(true())) ~> AlterRow1\nAlterRow1 sink(input(\n\t\tJaar_opmaak as integer,\n\t\tAlgemene_rekening as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\tUF as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as double,\n\t\tTotaal as double,\n\t\tTotaal_wijz as double,\n\t\tTotaal_aanp as double,\n\t\tTotaal_raming as double,\n\t\tTotaal_amjp as double,\n\t\tBudget_mjp as double,\n\t\tBudget_mjp1 as double,\n\t\tBudget_mjp2 as double,\n\t\tBudget_mjp3 as double,\n\t\tBudget_mjp4 as double,\n\t\tBudget_mjp5 as double,\n\t\tOverdracht as double,\n\t\tOvergedragen as double,\n\t\tBeschikbaar as double,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string,\n\t\tBG_Omschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['hash'],\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SinkUpdatesIntoCurrent\nFilterNew sink(input(\n\t\tJaar_opmaak as integer,\n\t\tAlgemene_rekening as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\tUF as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as double,\n\t\tTotaal as double,\n\t\tTotaal_wijz as double,\n\t\tTotaal_aanp as double,\n\t\tTotaal_raming as double,\n\t\tTotaal_amjp as double,\n\t\tBudget_mjp as double,\n\t\tBudget_mjp1 as double,\n\t\tBudget_mjp2 as double,\n\t\tBudget_mjp3 as double,\n\t\tBudget_mjp4 as double,\n\t\tBudget_mjp5 as double,\n\t\tOverdracht as double,\n\t\tOvergedragen as double,\n\t\tBeschikbaar as double,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string,\n\t\tBG_Omschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SinkNewIntoCurrent"
+		}
+	}
+}

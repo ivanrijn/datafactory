@@ -1,0 +1,35 @@
+{
+	"name": "CeviAlgemeneRekening",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "AR_CSV",
+						"type": "DatasetReference"
+					},
+					"name": "AR"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "TaskGroupResults",
+						"type": "DatasetReference"
+					},
+					"name": "SinkToTaskGroupResults"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterOnCurrentYear"
+				},
+				{
+					"name": "AddColumns"
+				}
+			],
+			"script": "source(output(\n\t\tBoekjaar as string,\n\t\t{Algemene rekening} as string,\n\t\tOmschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> AR\nAR filter(toInteger(Boekjaar) == year(currentDate())) ~> FilterOnCurrentYear\nFilterOnCurrentYear derive(Cluster1 = 'Algemene rekening',\n\t\tTaskgroup = concat({Algemene rekening},' ', Omschrijving)) ~> AddColumns\nAddColumns sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tTaskgroupGlobalID = {Algemene rekening},\n\t\tFinancialID = {Algemene rekening},\n\t\tCluster1,\n\t\tTaskgroup\n\t)) ~> SinkToTaskGroupResults"
+		}
+	}
+}

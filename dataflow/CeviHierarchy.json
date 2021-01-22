@@ -1,0 +1,35 @@
+{
+	"name": "CeviHierarchy",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "AR_CSV",
+						"type": "DatasetReference"
+					},
+					"name": "AR"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "HierarchyJSON",
+						"type": "DatasetReference"
+					},
+					"name": "CeviHierarchySink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterOnCurrentYear"
+				},
+				{
+					"name": "AdditionalColumns"
+				}
+			],
+			"script": "source(output(\n\t\tBoekjaar as integer,\n\t\t{Algemene rekening} as string,\n\t\tOmschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:['invoer/AR*.csv']) ~> AR\nAR filter(Boekjaar > (year(currentDate())-1)) ~> FilterOnCurrentYear\nFilterOnCurrentYear derive(Hierarchy = '$default',\n\t\tGroupCode = iif(\n    (startsWith({Algemene rekening},'6') || startsWith({Algemene rekening},'7')) && !startsWith({Algemene rekening},'664'),\n    'Exploitatie',\n    iif(\n        (startsWith({Algemene rekening},'150') || startsWith({Algemene rekening},'178')|| startsWith({Algemene rekening},'2')|| startsWith({Algemene rekening},'495')|| startsWith({Algemene rekening},'664')) \n        && \n        !startsWith({Algemene rekening},'2903') && !startsWith({Algemene rekening},'2904') && !startsWith({Algemene rekening},'2905') ,\n        'Investering',\n        iif(\n            (startsWith({Algemene rekening},'10')||startsWith({Algemene rekening},'158')||startsWith({Algemene rekening},'17')||startsWith({Algemene rekening},'2903')||startsWith({Algemene rekening},'2904')||startsWith({Algemene rekening},'2905')||startsWith({Algemene rekening},'4')\n            &&\n            !startsWith({Algemene rekening},'176')\n            &&\n            !startsWith({Algemene rekening},'495')\n            ),\n            'Financiering',\n            ''\n        )\n    )\n)) ~> AdditionalColumns\nAdditionalColumns sink(input(\n\t\tBookYear as string,\n\t\tFinancialID as string,\n\t\tHierarchy as string,\n\t\tGroupCode as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tBookYear = Boekjaar,\n\t\tFinancialID = {Algemene rekening},\n\t\tHierarchy,\n\t\tGroupCode\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> CeviHierarchySink"
+		}
+	}
+}

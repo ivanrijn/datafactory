@@ -1,0 +1,95 @@
+{
+	"name": "BudgetLinesTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "FinancialID",
+				"type": "varchar"
+			},
+			{
+				"name": "LineItemTypeCode",
+				"type": "varchar"
+			},
+			{
+				"name": "ProjectCode_1",
+				"type": "varchar"
+			},
+			{
+				"name": "ProjectCode_2",
+				"type": "varchar"
+			},
+			{
+				"name": "ProjectCode_3",
+				"type": "varchar"
+			},
+			{
+				"name": "ProjectCode_4",
+				"type": "varchar"
+			},
+			{
+				"name": "ProjectCode_5",
+				"type": "varchar"
+			},
+			{
+				"name": "ProjectCode_6",
+				"type": "varchar"
+			},
+			{
+				"name": "ProjectCode_7",
+				"type": "varchar"
+			},
+			{
+				"name": "ProjectCode_8",
+				"type": "varchar"
+			},
+			{
+				"name": "ProjectCode_9",
+				"type": "varchar"
+			},
+			{
+				"name": "ProjectCode_10",
+				"type": "varchar"
+			},
+			{
+				"name": "ProjectCode_11",
+				"type": "varchar"
+			},
+			{
+				"name": "Code",
+				"type": "varchar"
+			},
+			{
+				"name": "Description",
+				"type": "varchar"
+			},
+			{
+				"name": "VersionDescription",
+				"type": "varchar"
+			},
+			{
+				"name": "Version",
+				"type": "varchar"
+			},
+			{
+				"name": "Amount",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "PeriodSliceCode",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "BUDGETLINES"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

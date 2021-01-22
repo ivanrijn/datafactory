@@ -1,0 +1,12 @@
+{
+	"name": "ADFppfCevi",
+	"properties": {
+		"globalParameters": {
+			"APIKeyFinancialData": {
+				"type": "string",
+				"value": "0daed34d-f1ba-448f-81d2-2d643ce6cf1b"
+			}
+		}
+	},
+	"location": "westeurope"
+}

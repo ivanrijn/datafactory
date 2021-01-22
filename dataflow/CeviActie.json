@@ -1,0 +1,32 @@
+{
+	"name": "CeviActie",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "AC_CSV",
+						"type": "DatasetReference"
+					},
+					"name": "AC"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "TaskGroupResults",
+						"type": "DatasetReference"
+					},
+					"name": "SinkToTaskGroup"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AdditionalColumns"
+				}
+			],
+			"script": "source(output(\n\t\tJaar as string,\n\t\tActieplan as string,\n\t\tCode as string,\n\t\tPrioritair as string,\n\t\tOmschrijving as string,\n\t\tCommentaar as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string,\n\t\tStatus as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:['invoer/AC*.csv']) ~> AC\nAC derive(Cluster1 = 'Actie',\n\t\tTaskgroup = concat(Code,' ',Omschrijving),\n\t\tRole1 = 'Verantwoordelijke',\n\t\tRole2 = 'Opvolger',\n\t\tTagGroup1 = 'Prioritair/Niet-prioritair',\n\t\tTagGroup1Tags = iif(Prioritair ==='true','Prioritair','Niet-prioritair')) ~> AdditionalColumns\nAdditionalColumns sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tCluster1,\n\t\tTaskgroupGlobalID = Code,\n\t\tProjectCode = Code,\n\t\tTaskgroup,\n\t\tRole1,\n\t\tRole1UserGlobalIDs = Verantwoordelijke,\n\t\tRole2,\n\t\tRole2UserGlobalIDs = Opvolger,\n\t\tTagGroup1,\n\t\tTagGroup1Tags\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SinkToTaskGroup"
+		}
+	}
+}

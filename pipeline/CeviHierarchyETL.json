@@ -1,0 +1,163 @@
+{
+	"name": "CeviHierarchyETL",
+	"properties": {
+		"activities": [
+			{
+				"name": "CeviHierarchySendToPPF",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "CeviHierarchy",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "Hierarchy",
+							"wildcardFileName": "*.json",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"sink": {
+						"type": "RestSink",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": 10,
+						"requestMethod": "POST",
+						"writeBatchSize": 10000,
+						"httpCompressionType": "none"
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "$['BookYear']"
+								},
+								"sink": {
+									"path": "$['BookYear']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['FinancialID']"
+								},
+								"sink": {
+									"path": "$['FinancialID']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['Hierarchy']"
+								},
+								"sink": {
+									"path": "$['Hierarchy']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['GroupCode']"
+								},
+								"sink": {
+									"path": "$['GroupCode']"
+								}
+							}
+						],
+						"collectionReference": ""
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "HierarchyJSON",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "PepperflowAPI_Hierarchy",
+						"type": "DatasetReference",
+						"parameters": {
+							"APIKey": "f9e04968-0af1-46eb-8b12-19518e674f8c"
+						}
+					}
+				]
+			},
+			{
+				"name": "CeviHierarchy",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "DeleteHierarchy",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "CeviHierarchy",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "DeleteHierarchy",
+				"type": "Delete",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "HierarchyJSON",
+						"type": "DatasetReference"
+					},
+					"enableLogging": false,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					}
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2021-01-20T19:14:07Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

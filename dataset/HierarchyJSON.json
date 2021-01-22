@@ -1,0 +1,36 @@
+{
+	"name": "HierarchyJSON",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzurePPFBlobStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"folderPath": "Hierarchy",
+				"container": "ppfcontainerdenderleeuw"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"BookYear": {
+					"type": "string"
+				},
+				"FinancialID": {
+					"type": "string"
+				},
+				"Hierarchy": {
+					"type": "string"
+				},
+				"GroupCode": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

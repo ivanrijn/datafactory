@@ -1,0 +1,169 @@
+{
+	"name": "BudgetJoinTMP",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzurePPFBlobStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"folderPath": "temp",
+				"container": "ppfcontainerdenderleeuw"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Jaar opmaak",
+				"type": "String"
+			},
+			{
+				"name": "Algemene rekening",
+				"type": "String"
+			},
+			{
+				"name": "Beleidsitem",
+				"type": "String"
+			},
+			{
+				"name": "Kostenplaats",
+				"type": "String"
+			},
+			{
+				"name": "Investeringsproject",
+				"type": "String"
+			},
+			{
+				"name": "Investeringssubproject",
+				"type": "String"
+			},
+			{
+				"name": "Actieplan",
+				"type": "String"
+			},
+			{
+				"name": "Actie",
+				"type": "String"
+			},
+			{
+				"name": "Company",
+				"type": "String"
+			},
+			{
+				"name": "U/F",
+				"type": "String"
+			},
+			{
+				"name": "BG_Omschrijving",
+				"type": "String"
+			},
+			{
+				"name": "Omschrijving",
+				"type": "String"
+			},
+			{
+				"name": "Budgethouder",
+				"type": "String"
+			},
+			{
+				"name": "Sector",
+				"type": "String"
+			},
+			{
+				"name": "Groep",
+				"type": "String"
+			},
+			{
+				"name": "Dienst",
+				"type": "String"
+			},
+			{
+				"name": "Initieel",
+				"type": "String"
+			},
+			{
+				"name": "Totaal",
+				"type": "String"
+			},
+			{
+				"name": "Totaal wijz",
+				"type": "String"
+			},
+			{
+				"name": "Totaal aanp",
+				"type": "String"
+			},
+			{
+				"name": "Totaal raming",
+				"type": "String"
+			},
+			{
+				"name": "Totaal amjp",
+				"type": "String"
+			},
+			{
+				"name": "Budget mjp",
+				"type": "String"
+			},
+			{
+				"name": "Budget mjp1",
+				"type": "String"
+			},
+			{
+				"name": "Budget mjp2",
+				"type": "String"
+			},
+			{
+				"name": "Budget mjp3",
+				"type": "String"
+			},
+			{
+				"name": "Budget mjp4",
+				"type": "String"
+			},
+			{
+				"name": "Budget mjp5",
+				"type": "String"
+			},
+			{
+				"name": "Overdracht",
+				"type": "String"
+			},
+			{
+				"name": "Overgedragen",
+				"type": "String"
+			},
+			{
+				"name": "Beschikbaar",
+				"type": "String"
+			},
+			{
+				"name": "Code",
+				"type": "String"
+			},
+			{
+				"name": "SD_Label",
+				"type": "String"
+			},
+			{
+				"name": "OD_Label",
+				"type": "String"
+			},
+			{
+				"name": "Beleidsveld",
+				"type": "String"
+			},
+			{
+				"name": "hash",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
