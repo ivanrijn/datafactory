@@ -1,0 +1,35 @@
+{
+	"name": "CeviBeleidsdomein",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "BD_CSV",
+						"type": "DatasetReference"
+					},
+					"name": "BD"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "TaskGroupResults",
+						"type": "DatasetReference"
+					},
+					"name": "SinkToTaskGroupResults"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AddCluster"
+				},
+				{
+					"name": "FilterOnCurrentYear"
+				}
+			],
+			"script": "source(output(\n\t\tBoekjaar as string,\n\t\tBeleidsdomein as string,\n\t\tOmschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:['invoer/BD*.csv']) ~> BD\nFilterOnCurrentYear derive(Cluster1 = 'Beleidsdomein') ~> AddCluster\nBD filter(toInteger(Boekjaar) == year(currentDate())) ~> FilterOnCurrentYear\nAddCluster sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tTaskgroupGlobalID = Beleidsdomein,\n\t\tProjectCode = Beleidsdomein,\n\t\tTaskgroup = Omschrijving,\n\t\tCluster1\n\t)) ~> SinkToTaskGroupResults"
+		}
+	}
+}
