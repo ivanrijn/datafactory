@@ -1,0 +1,45 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "ADFppfCevi"
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"value": ""
+		},
+		"AzurePPFBlobStorage_connectionString": {
+			"value": ""
+		},
+		"AzureSqlDatabase1_connectionString": {
+			"value": ""
+		},
+		"AzureTableStorage1_connectionString": {
+			"value": ""
+		},
+		"CeviTMPBudgetLinesSQL_connectionString": {
+			"value": ""
+		},
+		"FTPDenderleeuw_password": {
+			"value": ""
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://ppfteststorage.dfs.core.windows.net"
+		},
+		"FTPDenderleeuw_properties_typeProperties_host": {
+			"value": "ftp.pepperflow.nl"
+		},
+		"FTPDenderleeuw_properties_typeProperties_userName": {
+			"value": "denderleeuw"
+		},
+		"PPF API_properties_typeProperties_url": {
+			"value": "https://goconnector.pepperflow.be/"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

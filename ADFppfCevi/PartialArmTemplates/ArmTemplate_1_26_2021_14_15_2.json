@@ -1,0 +1,409 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADFppfCevi"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviTaskGroupETL')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CeviAlgemeneRekening",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "DeleteOldData",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CeviAlgemeneRekening",
+								"type": "DataFlowReference"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "CeviTaskGroupSendToPPF",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "CeviAlgemeneRekening",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "CeviActie",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "CeviActieplan",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "CeviBeleidsdomein",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "TaskGroup",
+									"wildcardFileName": "*.json",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"sink": {
+								"type": "RestSink",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": 10,
+								"requestMethod": "POST",
+								"writeBatchSize": 10000,
+								"httpCompressionType": "none"
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "TaskGroupResults",
+								"type": "DatasetReference"
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "PepperflowAPI_TaskGroup",
+								"type": "DatasetReference",
+								"parameters": {
+									"APIKey": "7381028d-59ea-4c80-a4c1-9b93b63d3f99"
+								}
+							}
+						]
+					},
+					{
+						"name": "DeleteOldData",
+						"type": "Delete",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "TaskGroupResults",
+								"type": "DatasetReference"
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "CeviActie",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "DeleteOldData",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CeviActie",
+								"type": "DataFlowReference"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "CeviActieplan",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "DeleteOldData",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Actieplan",
+								"type": "DataFlowReference"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "CeviBeleidsdomein",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "DeleteOldData",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CeviBeleidsdomein",
+								"type": "DataFlowReference"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-01-20T19:10:50Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/CeviActie')]",
+				"[concat(variables('factoryId'), '/dataflows/Actieplan')]",
+				"[concat(variables('factoryId'), '/dataflows/CeviBeleidsdomein')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BD_CSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "TaskGroupCSV",
+						"container": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Actieplan')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "AP_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "AP"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TaskGroupResults",
+								"type": "DatasetReference"
+							},
+							"name": "SinkToTaskGroup"
+						}
+					],
+					"transformations": [
+						{
+							"name": "DerivedColumn1"
+						},
+						{
+							"name": "FilterOnYear"
+						}
+					],
+					"script": "source(output(\n\t\tJaar as string,\n\t\t{Strategische doelstelling} as string,\n\t\t{Operationele doelstelling} as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tCommentaar as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string,\n\t\tBudgethouder as string,\n\t\tAanvang as string,\n\t\tVoltooiing as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> AP\nFilterOnYear derive(Cluster1 = 'Actieplan',\n\t\tTaskgroup = concat(Code,' ',{Korte omschrijving}),\n\t\tRole1 = 'Verantwoordelijke',\n\t\tRole2 = 'Opvolger',\n\t\tRole3 = 'Budgethouder') ~> DerivedColumn1\nAP filter(toInteger(Jaar) == year(currentDate())) ~> FilterOnYear\nDerivedColumn1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tCluster1,\n\t\tTaskgroupGlobalID = Code,\n\t\tProjectCode = Code,\n\t\tTaskgroup,\n\t\tRole1,\n\t\tRole1UserGlobalIDs = Verantwoordelijke,\n\t\tRole2,\n\t\tRole2UserGlobalIDs = Opvolger,\n\t\tRole3,\n\t\tRole3UserGlobalIDs = Budgethouder\n\t)) ~> SinkToTaskGroup"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviActie')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "AC_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "AC"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TaskGroupResults",
+								"type": "DatasetReference"
+							},
+							"name": "SinkToTaskGroup"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AdditionalColumns"
+						},
+						{
+							"name": "FilterOnCurrentYear"
+						}
+					],
+					"script": "source(output(\n\t\tJaar as string,\n\t\tActieplan as string,\n\t\tCode as string,\n\t\tPrioritair as string,\n\t\tOmschrijving as string,\n\t\tCommentaar as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string,\n\t\tStatus as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:['invoer/AC*.csv']) ~> AC\nFilterOnCurrentYear derive(Cluster1 = 'Actie',\n\t\tTaskgroup = concat(Code,' ',Omschrijving),\n\t\tRole1 = 'Verantwoordelijke',\n\t\tRole2 = 'Opvolger',\n\t\tTagGroup1 = 'Prioritair/Niet-prioritair',\n\t\tTagGroup1Tags = iif(Prioritair ==='true','Prioritair','Niet-prioritair')) ~> AdditionalColumns\nAC filter(toInteger(Jaar) == year(currentDate())) ~> FilterOnCurrentYear\nAdditionalColumns sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tCluster1,\n\t\tTaskgroupGlobalID = Code,\n\t\tProjectCode = Code,\n\t\tTaskgroup,\n\t\tRole1,\n\t\tRole1UserGlobalIDs = Verantwoordelijke,\n\t\tRole2,\n\t\tRole2UserGlobalIDs = Opvolger,\n\t\tTagGroup1,\n\t\tTagGroup1Tags\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SinkToTaskGroup"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviBeleidsdomein')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "BD_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "BD"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TaskGroupResults",
+								"type": "DatasetReference"
+							},
+							"name": "SinkToTaskGroupResults"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AddCluster"
+						},
+						{
+							"name": "FilterOnCurrentYear"
+						}
+					],
+					"script": "source(output(\n\t\tBoekjaar as string,\n\t\tBeleidsdomein as string,\n\t\tOmschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:['invoer/BD*.csv']) ~> BD\nFilterOnCurrentYear derive(Cluster1 = 'Beleidsdomein') ~> AddCluster\nBD filter(toInteger(Boekjaar) == year(currentDate())) ~> FilterOnCurrentYear\nAddCluster sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tTaskgroupGlobalID = Beleidsdomein,\n\t\tProjectCode = Beleidsdomein,\n\t\tTaskgroup = Omschrijving,\n\t\tCluster1\n\t)) ~> SinkToTaskGroupResults"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/BD_CSV')]"
+			]
+		}
+	]
+}

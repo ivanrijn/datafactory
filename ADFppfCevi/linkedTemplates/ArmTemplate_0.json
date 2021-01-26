@@ -1,0 +1,1308 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADFppfCevi"
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
+		},
+		"AzurePPFBlobStorage_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzurePPFBlobStorage'"
+		},
+		"AzureSqlDatabase1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabase1'"
+		},
+		"AzureTableStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureTableStorage1'"
+		},
+		"CeviTMPBudgetLinesSQL_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'CeviTMPBudgetLinesSQL'"
+		},
+		"FTPDenderleeuw_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'FTPDenderleeuw'"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://ppfteststorage.dfs.core.windows.net"
+		},
+		"FTPDenderleeuw_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "ftp.pepperflow.nl"
+		},
+		"FTPDenderleeuw_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "denderleeuw"
+		},
+		"PPF API_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://goconnector.pepperflow.be/"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzurePPFBlobStorage')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzurePPFBlobStorage_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlDatabase1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureSqlDatabase1_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureTableStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureTableStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureTableStorage1_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviTMPBudgetLinesSQL')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('CeviTMPBudgetLinesSQL_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FTPDenderleeuw')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "FtpServer",
+				"typeProperties": {
+					"host": "[parameters('FTPDenderleeuw_properties_typeProperties_host')]",
+					"port": 21,
+					"enableSsl": true,
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Basic",
+					"userName": "[parameters('FTPDenderleeuw_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('FTPDenderleeuw_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PPF API')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('PPF API_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AC_CSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "AC_20201203_1149_bbc.csv",
+						"folderPath": "invoer",
+						"fileSystem": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AP_CSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "AP_20201203_1149_bbc.csv",
+						"folderPath": "invoer",
+						"container": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Jaar",
+						"type": "String"
+					},
+					{
+						"name": "Strategische doelstelling",
+						"type": "String"
+					},
+					{
+						"name": "Operationele doelstelling",
+						"type": "String"
+					},
+					{
+						"name": "Code",
+						"type": "String"
+					},
+					{
+						"name": "Label",
+						"type": "String"
+					},
+					{
+						"name": "Korte omschrijving",
+						"type": "String"
+					},
+					{
+						"name": "Lange omschrijving",
+						"type": "String"
+					},
+					{
+						"name": "Commentaar",
+						"type": "String"
+					},
+					{
+						"name": "Verantwoordelijke",
+						"type": "String"
+					},
+					{
+						"name": "Opvolger",
+						"type": "String"
+					},
+					{
+						"name": "Budgethouder",
+						"type": "String"
+					},
+					{
+						"name": "Aanvang",
+						"type": "String"
+					},
+					{
+						"name": "Voltooiing",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzurePPFBlobStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AR_CSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "invoer",
+						"container": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Boekjaar",
+						"type": "String"
+					},
+					{
+						"name": "Algemene rekening",
+						"type": "String"
+					},
+					{
+						"name": "Omschrijving",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzurePPFBlobStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BD_CSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "TaskGroupCSV",
+						"container": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzurePPFBlobStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BG_CSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "BG*.csv",
+						"folderPath": "invoer",
+						"container": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Jaar opmaak",
+						"type": "String"
+					},
+					{
+						"name": "Algemene rekening",
+						"type": "String"
+					},
+					{
+						"name": "Beleidsitem",
+						"type": "String"
+					},
+					{
+						"name": "Kostenplaats",
+						"type": "String"
+					},
+					{
+						"name": "Investeringsproject",
+						"type": "String"
+					},
+					{
+						"name": "Investeringssubproject",
+						"type": "String"
+					},
+					{
+						"name": "Actieplan",
+						"type": "String"
+					},
+					{
+						"name": "Actie",
+						"type": "String"
+					},
+					{
+						"name": "Company",
+						"type": "String"
+					},
+					{
+						"name": "U/F",
+						"type": "String"
+					},
+					{
+						"name": "AR Omschrijving",
+						"type": "String"
+					},
+					{
+						"name": "Omschrijving",
+						"type": "String"
+					},
+					{
+						"name": "Budgethouder",
+						"type": "String"
+					},
+					{
+						"name": "Sector",
+						"type": "String"
+					},
+					{
+						"name": "Groep",
+						"type": "String"
+					},
+					{
+						"name": "Dienst",
+						"type": "String"
+					},
+					{
+						"name": "Initieel",
+						"type": "String"
+					},
+					{
+						"name": "Totaal",
+						"type": "String"
+					},
+					{
+						"name": "Totaal wijz",
+						"type": "String"
+					},
+					{
+						"name": "Totaal aanp",
+						"type": "String"
+					},
+					{
+						"name": "Totaal raming",
+						"type": "String"
+					},
+					{
+						"name": "Totaal amjp",
+						"type": "String"
+					},
+					{
+						"name": "Budget mjp",
+						"type": "String"
+					},
+					{
+						"name": "Budget mjp1",
+						"type": "String"
+					},
+					{
+						"name": "Budget mjp2",
+						"type": "String"
+					},
+					{
+						"name": "Budget mjp3",
+						"type": "String"
+					},
+					{
+						"name": "Budget mjp4",
+						"type": "String"
+					},
+					{
+						"name": "Budget mjp5",
+						"type": "String"
+					},
+					{
+						"name": "Overdracht",
+						"type": "String"
+					},
+					{
+						"name": "Overgedragen",
+						"type": "String"
+					},
+					{
+						"name": "Verbruikt/Ontvangen",
+						"type": "String"
+					},
+					{
+						"name": "Beschikbaar",
+						"type": "String"
+					},
+					{
+						"name": "Afdrukvolgorde",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzurePPFBlobStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BI_CSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "BI_20201203_1149_bbc.csv",
+						"folderPath": "invoer",
+						"container": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Boekjaar",
+						"type": "String"
+					},
+					{
+						"name": "Beleidsitem",
+						"type": "String"
+					},
+					{
+						"name": "Beleidsveld",
+						"type": "String"
+					},
+					{
+						"name": "Omschrijving",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzurePPFBlobStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BudgetJoinTMP')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "temp",
+						"container": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Jaar opmaak",
+						"type": "String"
+					},
+					{
+						"name": "Algemene rekening",
+						"type": "String"
+					},
+					{
+						"name": "Beleidsitem",
+						"type": "String"
+					},
+					{
+						"name": "Kostenplaats",
+						"type": "String"
+					},
+					{
+						"name": "Investeringsproject",
+						"type": "String"
+					},
+					{
+						"name": "Investeringssubproject",
+						"type": "String"
+					},
+					{
+						"name": "Actieplan",
+						"type": "String"
+					},
+					{
+						"name": "Actie",
+						"type": "String"
+					},
+					{
+						"name": "Company",
+						"type": "String"
+					},
+					{
+						"name": "U/F",
+						"type": "String"
+					},
+					{
+						"name": "BG_Omschrijving",
+						"type": "String"
+					},
+					{
+						"name": "Omschrijving",
+						"type": "String"
+					},
+					{
+						"name": "Budgethouder",
+						"type": "String"
+					},
+					{
+						"name": "Sector",
+						"type": "String"
+					},
+					{
+						"name": "Groep",
+						"type": "String"
+					},
+					{
+						"name": "Dienst",
+						"type": "String"
+					},
+					{
+						"name": "Initieel",
+						"type": "String"
+					},
+					{
+						"name": "Totaal",
+						"type": "String"
+					},
+					{
+						"name": "Totaal wijz",
+						"type": "String"
+					},
+					{
+						"name": "Totaal aanp",
+						"type": "String"
+					},
+					{
+						"name": "Totaal raming",
+						"type": "String"
+					},
+					{
+						"name": "Totaal amjp",
+						"type": "String"
+					},
+					{
+						"name": "Budget mjp",
+						"type": "String"
+					},
+					{
+						"name": "Budget mjp1",
+						"type": "String"
+					},
+					{
+						"name": "Budget mjp2",
+						"type": "String"
+					},
+					{
+						"name": "Budget mjp3",
+						"type": "String"
+					},
+					{
+						"name": "Budget mjp4",
+						"type": "String"
+					},
+					{
+						"name": "Budget mjp5",
+						"type": "String"
+					},
+					{
+						"name": "Overdracht",
+						"type": "String"
+					},
+					{
+						"name": "Overgedragen",
+						"type": "String"
+					},
+					{
+						"name": "Beschikbaar",
+						"type": "String"
+					},
+					{
+						"name": "Code",
+						"type": "String"
+					},
+					{
+						"name": "SD_Label",
+						"type": "String"
+					},
+					{
+						"name": "OD_Label",
+						"type": "String"
+					},
+					{
+						"name": "Beleidsveld",
+						"type": "String"
+					},
+					{
+						"name": "hash",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzurePPFBlobStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BudgetLinesTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "FinancialID",
+						"type": "varchar"
+					},
+					{
+						"name": "LineItemTypeCode",
+						"type": "varchar"
+					},
+					{
+						"name": "ProjectCode_1",
+						"type": "varchar"
+					},
+					{
+						"name": "ProjectCode_2",
+						"type": "varchar"
+					},
+					{
+						"name": "ProjectCode_3",
+						"type": "varchar"
+					},
+					{
+						"name": "ProjectCode_4",
+						"type": "varchar"
+					},
+					{
+						"name": "ProjectCode_5",
+						"type": "varchar"
+					},
+					{
+						"name": "ProjectCode_6",
+						"type": "varchar"
+					},
+					{
+						"name": "ProjectCode_7",
+						"type": "varchar"
+					},
+					{
+						"name": "ProjectCode_8",
+						"type": "varchar"
+					},
+					{
+						"name": "ProjectCode_9",
+						"type": "varchar"
+					},
+					{
+						"name": "ProjectCode_10",
+						"type": "varchar"
+					},
+					{
+						"name": "ProjectCode_11",
+						"type": "varchar"
+					},
+					{
+						"name": "Code",
+						"type": "varchar"
+					},
+					{
+						"name": "Description",
+						"type": "varchar"
+					},
+					{
+						"name": "VersionDescription",
+						"type": "varchar"
+					},
+					{
+						"name": "Version",
+						"type": "varchar"
+					},
+					{
+						"name": "Amount",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "PeriodSliceCode",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "BUDGETLINES"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CombinedBudgetLinesTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "CeviTMPBudgetLinesSQL",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "Jaar_opmaak",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Algemene_rekening",
+						"type": "varchar"
+					},
+					{
+						"name": "Beleidsitem",
+						"type": "varchar"
+					},
+					{
+						"name": "Kostenplaats",
+						"type": "varchar"
+					},
+					{
+						"name": "Investeringsproject",
+						"type": "varchar"
+					},
+					{
+						"name": "Investeringssubproject",
+						"type": "varchar"
+					},
+					{
+						"name": "Actieplan",
+						"type": "varchar"
+					},
+					{
+						"name": "Actie",
+						"type": "varchar"
+					},
+					{
+						"name": "Company",
+						"type": "varchar"
+					},
+					{
+						"name": "UF",
+						"type": "varchar"
+					},
+					{
+						"name": "Omschrijving",
+						"type": "varchar"
+					},
+					{
+						"name": "Budgethouder",
+						"type": "varchar"
+					},
+					{
+						"name": "Sector",
+						"type": "varchar"
+					},
+					{
+						"name": "Groep",
+						"type": "varchar"
+					},
+					{
+						"name": "Dienst",
+						"type": "varchar"
+					},
+					{
+						"name": "Initieel",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal_wijz",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal_aanp",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal_raming",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal_amjp",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp1",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp2",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp3",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp4",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp5",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Overdracht",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Overgedragen",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Beschikbaar",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Code",
+						"type": "varchar"
+					},
+					{
+						"name": "SD_Label",
+						"type": "varchar"
+					},
+					{
+						"name": "OD_Label",
+						"type": "varchar"
+					},
+					{
+						"name": "Beleidsveld",
+						"type": "varchar"
+					},
+					{
+						"name": "hash",
+						"type": "varchar"
+					},
+					{
+						"name": "BG_Omschrijving",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "combinedbudget"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/CeviTMPBudgetLinesSQL')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DeltaTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "Jaar_opmaak",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Algemene_rekening",
+						"type": "varchar"
+					},
+					{
+						"name": "Beleidsitem",
+						"type": "varchar"
+					},
+					{
+						"name": "Kostenplaats",
+						"type": "varchar"
+					},
+					{
+						"name": "Investeringsproject",
+						"type": "varchar"
+					},
+					{
+						"name": "Investeringssubproject",
+						"type": "varchar"
+					},
+					{
+						"name": "Actieplan",
+						"type": "varchar"
+					},
+					{
+						"name": "Actie",
+						"type": "varchar"
+					},
+					{
+						"name": "Company",
+						"type": "varchar"
+					},
+					{
+						"name": "UF",
+						"type": "varchar"
+					},
+					{
+						"name": "Omschrijving",
+						"type": "varchar"
+					},
+					{
+						"name": "Budgethouder",
+						"type": "varchar"
+					},
+					{
+						"name": "Sector",
+						"type": "varchar"
+					},
+					{
+						"name": "Groep",
+						"type": "varchar"
+					},
+					{
+						"name": "Dienst",
+						"type": "varchar"
+					},
+					{
+						"name": "Initieel",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal_wijz",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal_aanp",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal_raming",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal_amjp",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp1",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp2",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp3",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp4",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp5",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Overdracht",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Overgedragen",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Beschikbaar",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Code",
+						"type": "varchar"
+					},
+					{
+						"name": "SD_Label",
+						"type": "varchar"
+					},
+					{
+						"name": "OD_Label",
+						"type": "varchar"
+					},
+					{
+						"name": "Beleidsveld",
+						"type": "varchar"
+					},
+					{
+						"name": "hash",
+						"type": "varchar"
+					},
+					{
+						"name": "BG_Omschrijving",
+						"type": "varchar"
+					},
+					{
+						"name": "operation",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "deltacombinedbudget"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DenderleeuwCSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "invoer",
+						"container": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzurePPFBlobStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FTPDenderleeuw')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "FTPDenderleeuw",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "FtpServerLocation"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/FTPDenderleeuw')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FinancialImportData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "uitvoer",
+						"container": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzurePPFBlobStorage')]"
+			]
+		}
+	]
+}

@@ -1,0 +1,1427 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADFppfCevi"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/FinancialImportData_nonbudget')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "uitvoer_nonbudget",
+						"container": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/HierarchyJSON')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "Hierarchy",
+						"container": "ppfcontainerdenderleeuw"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"BookYear": {
+							"type": "string"
+						},
+						"FinancialID": {
+							"type": "string"
+						},
+						"Hierarchy": {
+							"type": "string"
+						},
+						"GroupCode": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OD_CSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "invoer",
+						"container": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Jaar",
+						"type": "String"
+					},
+					{
+						"name": "Code strategische doelstelling",
+						"type": "String"
+					},
+					{
+						"name": "Label strategische doelstelling",
+						"type": "String"
+					},
+					{
+						"name": "Code",
+						"type": "String"
+					},
+					{
+						"name": "Label",
+						"type": "String"
+					},
+					{
+						"name": "Korte omschrijving",
+						"type": "String"
+					},
+					{
+						"name": "Lange omschrijving",
+						"type": "String"
+					},
+					{
+						"name": "Commentaar",
+						"type": "String"
+					},
+					{
+						"name": "Prioritair",
+						"type": "String"
+					},
+					{
+						"name": "Verantwoordelijke",
+						"type": "String"
+					},
+					{
+						"name": "Opvolger",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PepperflowAPI_FinancialData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PPF API",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"APIKey": {
+						"type": "string",
+						"defaultValue": "0daed34d-f1ba-448f-81d2-2d643ce6cf1b"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('UpdateFinancialData/v3/',dataset().APIKey)",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PepperflowAPI_Hierarchy')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PPF API",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"APIKey": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('UpdateFinancialIDBookyear/',dataset().APIKey)",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PepperflowAPI_TaskGroup')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PPF API",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"APIKey": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('ImportTaskgroup/',dataset().APIKey)",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SD_CSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "SD_20201203_1149_bbc.csv",
+						"folderPath": "invoer",
+						"container": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Boekjaar",
+						"type": "String"
+					},
+					{
+						"name": "Code",
+						"type": "String"
+					},
+					{
+						"name": "Label",
+						"type": "String"
+					},
+					{
+						"name": "Korte omschrijving",
+						"type": "String"
+					},
+					{
+						"name": "Lange omschrijving",
+						"type": "String"
+					},
+					{
+						"name": "Verantwoordelijke",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TaskGroupResults')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "TaskGroup",
+						"container": "ppfcontainerdenderleeuw"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TempCombinedBudget')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "Jaar_opmaak",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Algemene_rekening",
+						"type": "varchar"
+					},
+					{
+						"name": "Beleidsitem",
+						"type": "varchar"
+					},
+					{
+						"name": "Kostenplaats",
+						"type": "varchar"
+					},
+					{
+						"name": "Investeringsproject",
+						"type": "varchar"
+					},
+					{
+						"name": "Investeringssubproject",
+						"type": "varchar"
+					},
+					{
+						"name": "Actieplan",
+						"type": "varchar"
+					},
+					{
+						"name": "Actie",
+						"type": "varchar"
+					},
+					{
+						"name": "Company",
+						"type": "varchar"
+					},
+					{
+						"name": "UF",
+						"type": "varchar"
+					},
+					{
+						"name": "Omschrijving",
+						"type": "varchar"
+					},
+					{
+						"name": "Budgethouder",
+						"type": "varchar"
+					},
+					{
+						"name": "Sector",
+						"type": "varchar"
+					},
+					{
+						"name": "Groep",
+						"type": "varchar"
+					},
+					{
+						"name": "Dienst",
+						"type": "varchar"
+					},
+					{
+						"name": "Initieel",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal_wijz",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal_aanp",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal_raming",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Totaal_amjp",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp1",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp2",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp3",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp4",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Budget_mjp5",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Overdracht",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Overgedragen",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Beschikbaar",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "Code",
+						"type": "varchar"
+					},
+					{
+						"name": "SD_Label",
+						"type": "varchar"
+					},
+					{
+						"name": "OD_Label",
+						"type": "varchar"
+					},
+					{
+						"name": "Beleidsveld",
+						"type": "varchar"
+					},
+					{
+						"name": "hash",
+						"type": "varchar"
+					},
+					{
+						"name": "BG_Omschrijving",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "tempcombinedbudget"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/VBResults')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "uitvoer",
+						"container": "ppfcontainerdenderleeuw"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/VB_CSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "VB_20201203_1149_bbc.csv",
+						"folderPath": "invoer",
+						"container": "ppfcontainerdenderleeuw"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Jaar",
+						"type": "String"
+					},
+					{
+						"name": "Volgnummer",
+						"type": "String"
+					},
+					{
+						"name": "Company",
+						"type": "String"
+					},
+					{
+						"name": "Dossier",
+						"type": "String"
+					},
+					{
+						"name": "Betalende",
+						"type": "String"
+					},
+					{
+						"name": "Algemene rekening",
+						"type": "String"
+					},
+					{
+						"name": "Beleidsitem",
+						"type": "String"
+					},
+					{
+						"name": "Kostenplaats",
+						"type": "String"
+					},
+					{
+						"name": "Investeringsproject",
+						"type": "String"
+					},
+					{
+						"name": "Investeringssubproject",
+						"type": "String"
+					},
+					{
+						"name": "Actieplan",
+						"type": "String"
+					},
+					{
+						"name": "Actie",
+						"type": "String"
+					},
+					{
+						"name": "Bestelbon jaar",
+						"type": "String"
+					},
+					{
+						"name": "Bestelbon nummer",
+						"type": "String"
+					},
+					{
+						"name": "Aanwinst jaar",
+						"type": "String"
+					},
+					{
+						"name": "Aanwinst nummer",
+						"type": "String"
+					},
+					{
+						"name": "Code",
+						"type": "String"
+					},
+					{
+						"name": "Bedrag",
+						"type": "String"
+					},
+					{
+						"name": "Verbruikt/Ontvangen",
+						"type": "String"
+					},
+					{
+						"name": "Omschrijving",
+						"type": "String"
+					},
+					{
+						"name": "Datum",
+						"type": "String"
+					},
+					{
+						"name": "Budgethouder",
+						"type": "String"
+					},
+					{
+						"name": "Sector",
+						"type": "String"
+					},
+					{
+						"name": "Faktuur jaar",
+						"type": "String"
+					},
+					{
+						"name": "Faktuur nummer",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/uitvoer_json')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePPFBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "uitvoer.json",
+						"folderPath": "uitvoer",
+						"container": "ppfcontainerdenderleeuw"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"Code": {
+							"type": "string"
+						},
+						"Description": {
+							"type": "string"
+						},
+						"SyncID": {
+							"type": "integer"
+						},
+						"FinancialId": {
+							"type": "string"
+						},
+						"PeriodSliceCode": {
+							"type": "string"
+						},
+						"LineItemTypeCode": {
+							"type": "string"
+						},
+						"Amount": {
+							"type": "number"
+						},
+						"GroupCode": {
+							"type": "string"
+						},
+						"GroupCode_1": {
+							"type": "null"
+						},
+						"GroupCode_2": {
+							"type": "null"
+						},
+						"GroupCode_3": {
+							"type": "null"
+						},
+						"GroupDescription": {
+							"type": "string"
+						},
+						"ProjectCode": {
+							"type": "string"
+						},
+						"ProjectCode_1": {
+							"type": "string"
+						},
+						"ProjectCode_2": {
+							"type": "string"
+						},
+						"ProjectCode_3": {
+							"type": "string"
+						},
+						"ProjectCode_4": {
+							"type": "string"
+						},
+						"ProjectCode_5": {
+							"type": "string"
+						},
+						"ProjectCode_6": {
+							"type": "string"
+						},
+						"ProjectCode_7": {
+							"type": "string"
+						},
+						"ProjectCode_8": {
+							"type": "string"
+						},
+						"ProjectCode_9": {
+							"type": "string"
+						},
+						"ProjectCode_10": {
+							"type": "string"
+						},
+						"ProjectCode_11": {
+							"type": "string"
+						},
+						"ProjectCode_12": {
+							"type": "string"
+						},
+						"ProjectCode_13": {
+							"type": "string"
+						},
+						"ProjectCode_14": {
+							"type": "string"
+						},
+						"ProjectCode_15": {
+							"type": "string"
+						},
+						"ProjectCode_16": {
+							"type": "string"
+						},
+						"ProjectCode_17": {
+							"type": "string"
+						},
+						"ProjectCode_18": {
+							"type": "string"
+						},
+						"ProjectCode_19": {
+							"type": "string"
+						},
+						"ProjectCode_20": {
+							"type": "string"
+						},
+						"ProjectCode_21": {
+							"type": "string"
+						},
+						"ProjectCode_22": {
+							"type": "string"
+						},
+						"ProjectCode_23": {
+							"type": "string"
+						},
+						"ProjectCode_24": {
+							"type": "string"
+						},
+						"BookYear": {
+							"type": "integer"
+						},
+						"Version": {
+							"type": "string"
+						},
+						"VersionDescription": {
+							"type": "string"
+						},
+						"FreeField01": {
+							"type": "string"
+						},
+						"FreeField02": {
+							"type": "string"
+						},
+						"FreeField03": {
+							"type": "string"
+						},
+						"FreeField04": {
+							"type": "string"
+						},
+						"FreeField05": {
+							"type": "string"
+						},
+						"FreeField06": {
+							"type": "string"
+						},
+						"FreeField07": {
+							"type": "string"
+						},
+						"FreeField08": {
+							"type": "string"
+						},
+						"Administration": {
+							"type": "string"
+						},
+						"DocumentUrl": {
+							"type": "string"
+						},
+						"Mutation": {
+							"type": "number"
+						},
+						"BookDateTime": {
+							"type": "string"
+						},
+						"GlobalID": {
+							"type": "string"
+						},
+						"IncStr": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviCopyCSV')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CopyFromFTP",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "CeviClearInvoer",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "/"
+							},
+							{
+								"name": "Destination",
+								"value": "ppfcontainerdenderleeuw/invoer/"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "FtpReadSettings",
+									"recursive": false,
+									"wildcardFileName": "*.csv",
+									"enablePartitionDiscovery": false,
+									"useBinaryTransfer": true
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".csv"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "FTPDenderleeuw",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DenderleeuwCSV",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "CeviClearInvoer",
+						"type": "Delete",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DenderleeuwCSV",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-01-20T14:43:01Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Actieplan')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "AP_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "AP"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TaskGroupResults",
+								"type": "DatasetReference"
+							},
+							"name": "SinkToTaskGroup"
+						}
+					],
+					"transformations": [
+						{
+							"name": "DerivedColumn1"
+						},
+						{
+							"name": "FilterOnYear"
+						}
+					],
+					"script": "source(output(\n\t\tJaar as string,\n\t\t{Strategische doelstelling} as string,\n\t\t{Operationele doelstelling} as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tCommentaar as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string,\n\t\tBudgethouder as string,\n\t\tAanvang as string,\n\t\tVoltooiing as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> AP\nFilterOnYear derive(Cluster1 = 'Actieplan',\n\t\tTaskgroup = concat(Code,' ',{Korte omschrijving}),\n\t\tRole1 = 'Verantwoordelijke',\n\t\tRole2 = 'Opvolger',\n\t\tRole3 = 'Budgethouder') ~> DerivedColumn1\nAP filter(toInteger(Jaar) == year(currentDate())) ~> FilterOnYear\nDerivedColumn1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tCluster1,\n\t\tTaskgroupGlobalID = Code,\n\t\tProjectCode = Code,\n\t\tTaskgroup,\n\t\tRole1,\n\t\tRole1UserGlobalIDs = Verantwoordelijke,\n\t\tRole2,\n\t\tRole2UserGlobalIDs = Opvolger,\n\t\tRole3,\n\t\tRole3UserGlobalIDs = Budgethouder\n\t)) ~> SinkToTaskGroup"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/TaskGroupResults')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviAanwendingCombine')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "VB_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "VB"
+						},
+						{
+							"dataset": {
+								"referenceName": "AP_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "AP"
+						},
+						{
+							"dataset": {
+								"referenceName": "OD_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "OD"
+						},
+						{
+							"dataset": {
+								"referenceName": "SD_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "SD"
+						},
+						{
+							"dataset": {
+								"referenceName": "BI_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "BI"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData_nonbudget",
+								"type": "DatasetReference"
+							},
+							"name": "VBResults"
+						}
+					],
+					"transformations": [
+						{
+							"name": "TranslateVebruiktOntvangen"
+						},
+						{
+							"name": "VBAP"
+						},
+						{
+							"name": "VBAPOD"
+						},
+						{
+							"name": "VBAPODSD"
+						},
+						{
+							"name": "VBAPODSDBI"
+						},
+						{
+							"name": "FilterOnYearAndCodeAanwending"
+						}
+					],
+					"script": "source(output(\n\t\tJaar as string,\n\t\tVolgnummer as string,\n\t\tCompany as string,\n\t\tDossier as string,\n\t\tBetalende as string,\n\t\t{Algemene rekening} as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\t{Bestelbon jaar} as string,\n\t\t{Bestelbon nummer} as string,\n\t\t{Aanwinst jaar} as string,\n\t\t{Aanwinst nummer} as string,\n\t\tCode as string,\n\t\tBedrag as string,\n\t\t{Verbruikt/Ontvangen} as string,\n\t\tOmschrijving as string,\n\t\tDatum as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\t{Faktuur jaar} as string,\n\t\t{Faktuur nummer} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> VB\nsource(output(\n\t\tJaar as string,\n\t\t{Strategische doelstelling} as string,\n\t\t{Operationele doelstelling} as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tCommentaar as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string,\n\t\tBudgethouder as string,\n\t\tAanvang as string,\n\t\tVoltooiing as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> AP\nsource(output(\n\t\tJaar as string,\n\t\t{Code strategische doelstelling} as string,\n\t\t{Label strategische doelstelling} as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tCommentaar as string,\n\t\tPrioritair as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> OD\nsource(output(\n\t\tBoekjaar as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tVerantwoordelijke as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> SD\nsource(output(\n\t\tBoekjaar as string,\n\t\tBeleidsitem as string,\n\t\tBeleidsveld as string,\n\t\tOmschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> BI\nFilterOnYearAndCodeAanwending derive({Verbruikt/Ontvangen} = iif({Verbruikt/Ontvangen} === 'U', 'Charges', iif({Verbruikt/Ontvangen}==='O','Earnings','Unknown')),\n\t\tPeriodSliceCode = concat('Aanwending_',Jaar),\n\t\tFreeField03 = concat({Bestelbon jaar},'/',{Bestelbon nummer}),\n\t\tFreeField04 = concat({Aanwinst jaar},'/',{Aanwinst nummer}),\n\t\tFreeField05 = concat({Faktuur jaar},'/',{Faktuur nummer})) ~> TranslateVebruiktOntvangen\nTranslateVebruiktOntvangen, AP join(Actieplan == AP@Code\n\t&& VB@Jaar == AP@Jaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> VBAP\nVBAP, OD join({Operationele doelstelling} == OD@Label\n\t&& AP@Jaar == OD@Jaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> VBAPOD\nVBAPOD, SD join({Strategische doelstelling} == SD@Label\n\t&& VB@Jaar == Boekjaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> VBAPODSD\nVBAPODSD, BI join(VB@Beleidsitem == BI@Beleidsitem\n\t&& VB@Jaar == BI@Boekjaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> VBAPODSDBI\nVB filter(Code =='BAWD' || Code == 'BCOR') ~> FilterOnYearAndCodeAanwending\nVBAPODSDBI sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tPeriodSliceCode,\n\t\tFinancialID = {Algemene rekening},\n\t\tLineItemTypeCode = {Verbruikt/Ontvangen},\n\t\tAmount = Bedrag,\n\t\tProjectCode = Actie,\n\t\tProjectCode_1 = Actieplan,\n\t\tProjectCode_2 = OD@Label,\n\t\tProjectCode_3 = SD@Label,\n\t\tProjectCode_4 = Company,\n\t\tProjectCode_5 = VB@Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tCode = VB@Beleidsitem,\n\t\tDescription = BI@Omschrijving,\n\t\tBookYear = VB@Jaar,\n\t\tBookDateTime = Datum,\n\t\tVersion = Volgnummer,\n\t\tVersionDescription = VB@Omschrijving,\n\t\tFreeField01 = Dossier,\n\t\tFreeField02 = Betalende,\n\t\tFreeField03,\n\t\tFreeField04,\n\t\tFreeField05,\n\t\tFreeField06 = VB@Code\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> VBResults"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/VB_CSV')]",
+				"[concat(variables('factoryId'), '/datasets/OD_CSV')]",
+				"[concat(variables('factoryId'), '/datasets/SD_CSV')]",
+				"[concat(variables('factoryId'), '/datasets/FinancialImportData_nonbudget')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviActie')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "AC_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "AC"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TaskGroupResults",
+								"type": "DatasetReference"
+							},
+							"name": "SinkToTaskGroup"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AdditionalColumns"
+						},
+						{
+							"name": "FilterOnCurrentYear"
+						}
+					],
+					"script": "source(output(\n\t\tJaar as string,\n\t\tActieplan as string,\n\t\tCode as string,\n\t\tPrioritair as string,\n\t\tOmschrijving as string,\n\t\tCommentaar as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string,\n\t\tStatus as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:['invoer/AC*.csv']) ~> AC\nFilterOnCurrentYear derive(Cluster1 = 'Actie',\n\t\tTaskgroup = concat(Code,' ',Omschrijving),\n\t\tRole1 = 'Verantwoordelijke',\n\t\tRole2 = 'Opvolger',\n\t\tTagGroup1 = 'Prioritair/Niet-prioritair',\n\t\tTagGroup1Tags = iif(Prioritair ==='true','Prioritair','Niet-prioritair')) ~> AdditionalColumns\nAC filter(toInteger(Jaar) == year(currentDate())) ~> FilterOnCurrentYear\nAdditionalColumns sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tCluster1,\n\t\tTaskgroupGlobalID = Code,\n\t\tProjectCode = Code,\n\t\tTaskgroup,\n\t\tRole1,\n\t\tRole1UserGlobalIDs = Verantwoordelijke,\n\t\tRole2,\n\t\tRole2UserGlobalIDs = Opvolger,\n\t\tTagGroup1,\n\t\tTagGroup1Tags\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SinkToTaskGroup"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/TaskGroupResults')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviAlgemeneRekening')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "AR_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "AR"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TaskGroupResults",
+								"type": "DatasetReference"
+							},
+							"name": "SinkToTaskGroupResults"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterOnCurrentYear"
+						},
+						{
+							"name": "AddColumns"
+						}
+					],
+					"script": "source(output(\n\t\tBoekjaar as string,\n\t\t{Algemene rekening} as string,\n\t\tOmschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> AR\nAR filter(toInteger(Boekjaar) == year(currentDate())) ~> FilterOnCurrentYear\nFilterOnCurrentYear derive(Cluster1 = 'Algemene rekening',\n\t\tTaskgroup = concat({Algemene rekening},' ', Omschrijving)) ~> AddColumns\nAddColumns sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tTaskgroupGlobalID = {Algemene rekening},\n\t\tFinancialID = {Algemene rekening},\n\t\tCluster1,\n\t\tTaskgroup\n\t)) ~> SinkToTaskGroupResults"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/TaskGroupResults')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviBeleidsdomein')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "BD_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "BD"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TaskGroupResults",
+								"type": "DatasetReference"
+							},
+							"name": "SinkToTaskGroupResults"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AddCluster"
+						},
+						{
+							"name": "FilterOnCurrentYear"
+						}
+					],
+					"script": "source(output(\n\t\tBoekjaar as string,\n\t\tBeleidsdomein as string,\n\t\tOmschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:['invoer/BD*.csv']) ~> BD\nFilterOnCurrentYear derive(Cluster1 = 'Beleidsdomein') ~> AddCluster\nBD filter(toInteger(Boekjaar) == year(currentDate())) ~> FilterOnCurrentYear\nAddCluster sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tTaskgroupGlobalID = Beleidsdomein,\n\t\tProjectCode = Beleidsdomein,\n\t\tTaskgroup = Omschrijving,\n\t\tCluster1\n\t)) ~> SinkToTaskGroupResults"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/TaskGroupResults')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviBudgetLinesCombine')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "BG_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "BG"
+						},
+						{
+							"dataset": {
+								"referenceName": "OD_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "OD"
+						},
+						{
+							"dataset": {
+								"referenceName": "SD_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "SD"
+						},
+						{
+							"dataset": {
+								"referenceName": "BI_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "BI"
+						},
+						{
+							"dataset": {
+								"referenceName": "AP_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "AP"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "BudgetJoinTMP",
+								"type": "DatasetReference"
+							},
+							"name": "RegelsTotaal"
+						}
+					],
+					"transformations": [
+						{
+							"name": "BGAP"
+						},
+						{
+							"name": "BGAPOD"
+						},
+						{
+							"name": "BGAPODSD"
+						},
+						{
+							"name": "BGAPODSDBI"
+						},
+						{
+							"name": "UFChange"
+						},
+						{
+							"name": "MinAP"
+						},
+						{
+							"name": "MinOD"
+						},
+						{
+							"name": "MinSD"
+						},
+						{
+							"name": "Filter1"
+						}
+					],
+					"script": "source(output(\n\t\t{Jaar opmaak} as string,\n\t\t{Algemene rekening} as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\t{U/F} as string,\n\t\t{AR Omschrijving} as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as string,\n\t\tTotaal as string,\n\t\t{Totaal wijz} as string,\n\t\t{Totaal aanp} as string,\n\t\t{Totaal raming} as string,\n\t\t{Totaal amjp} as string,\n\t\t{Budget mjp} as string,\n\t\t{Budget mjp1} as string,\n\t\t{Budget mjp2} as string,\n\t\t{Budget mjp3} as string,\n\t\t{Budget mjp4} as string,\n\t\t{Budget mjp5} as string,\n\t\tOverdracht as string,\n\t\tOvergedragen as string,\n\t\t{Verbruikt/Ontvangen} as string,\n\t\tBeschikbaar as string,\n\t\tAfdrukvolgorde as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:['invoer/BG*.csv']) ~> BG\nsource(output(\n\t\tJaar as string,\n\t\t{Code strategische doelstelling} as string,\n\t\t{Label strategische doelstelling} as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tCommentaar as string,\n\t\tPrioritair as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:['invoer/OD*.csv']) ~> OD\nsource(output(\n\t\tBoekjaar as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tVerantwoordelijke as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> SD\nsource(output(\n\t\tBoekjaar as string,\n\t\tBeleidsitem as string,\n\t\tBeleidsveld as string,\n\t\tOmschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> BI\nsource(output(\n\t\tJaar as string,\n\t\t{Strategische doelstelling} as string,\n\t\t{Operationele doelstelling} as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tCommentaar as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string,\n\t\tBudgethouder as string,\n\t\tAanvang as string,\n\t\tVoltooiing as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> AP\nUFChange, MinAP join(Actieplan == Code\n\t&& {Jaar opmaak} == Jaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> BGAP\nBGAP, MinOD join({Operationele doelstelling} == Label\n\t&& MinAP@Jaar == MinOD@Jaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> BGAPOD\nBGAPOD, MinSD join({Strategische doelstelling} == MinSD@Label\n\t&& MinAP@Jaar == Boekjaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> BGAPODSD\nBGAPODSD, BI join(BG@Beleidsitem == BI@Beleidsitem\n\t&& {Jaar opmaak} == BI@Boekjaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> BGAPODSDBI\nFilter1 derive({U/F} = iif({U/F} === 'U', \n    'Charges',\n    iif({U/F}==='O', 'Earnings','Unknown')),\n\t\thash = sha2(256, concat(iifNull({Jaar opmaak},'',{Jaar opmaak}),iifNull({Algemene rekening},'',{Algemene rekening}),iifNull({Beleidsitem},'',{Beleidsitem}),iifNull({Kostenplaats},'',{Kostenplaats}),iifNull({Investeringsproject},'',{Investeringsproject}),iifNull({Investeringssubproject},'',{Investeringssubproject}),iifNull({Actieplan},'',{Actieplan}),iifNull({Actie},'',{Actie}),iifNull({Company},'',{Company}),iifNull({Budgethouder},'',{Budgethouder}),iifNull({Sector},'',{Sector}),iifNull({Groep},'',{Groep}),iifNull({Dienst},'',{Dienst})))) ~> UFChange\nAP select(mapColumn(\n\t\tJaar,\n\t\t{Strategische doelstelling},\n\t\t{Operationele doelstelling},\n\t\tCode\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> MinAP\nOD select(mapColumn(\n\t\tJaar,\n\t\tLabel\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> MinOD\nSD select(mapColumn(\n\t\tBoekjaar,\n\t\tLabel\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> MinSD\nBG filter(toInteger({Jaar opmaak}) > (year(currentDate())-2)) ~> Filter1\nBGAPODSDBI sink(input(\n\t\t{Jaar opmaak} as string,\n\t\t{Algemene rekening} as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\t{U/F} as string,\n\t\tBG_Omschrijving as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as string,\n\t\tTotaal as string,\n\t\t{Totaal wijz} as string,\n\t\t{Totaal aanp} as string,\n\t\t{Totaal raming} as string,\n\t\t{Totaal amjp} as string,\n\t\t{Budget mjp} as string,\n\t\t{Budget mjp1} as string,\n\t\t{Budget mjp2} as string,\n\t\t{Budget mjp3} as string,\n\t\t{Budget mjp4} as string,\n\t\t{Budget mjp5} as string,\n\t\tOverdracht as string,\n\t\tOvergedragen as string,\n\t\tBeschikbaar as string,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tfilePattern:'tempcombinedbudgetlines.csv',\n\tmapColumn(\n\t\t{Jaar opmaak},\n\t\t{Algemene rekening},\n\t\tBeleidsitem = BG@Beleidsitem,\n\t\tKostenplaats,\n\t\tInvesteringsproject,\n\t\tInvesteringssubproject,\n\t\tActieplan,\n\t\tActie,\n\t\tCompany,\n\t\t{U/F},\n\t\tOmschrijving = BI@Omschrijving,\n\t\tBudgethouder,\n\t\tSector,\n\t\tGroep,\n\t\tDienst,\n\t\tInitieel,\n\t\tTotaal,\n\t\t{Totaal wijz},\n\t\t{Totaal aanp},\n\t\t{Totaal raming},\n\t\t{Totaal amjp},\n\t\t{Budget mjp},\n\t\t{Budget mjp1},\n\t\t{Budget mjp2},\n\t\t{Budget mjp3},\n\t\t{Budget mjp4},\n\t\t{Budget mjp5},\n\t\tOverdracht,\n\t\tOvergedragen,\n\t\tBeschikbaar,\n\t\tCode,\n\t\tSD_Label = MinSD@Label,\n\t\tOD_Label = MinOD@Label,\n\t\tBeleidsveld,\n\t\thash,\n\t\tBG_Omschrijving = BG@Omschrijving\n\t)) ~> RegelsTotaal"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/OD_CSV')]",
+				"[concat(variables('factoryId'), '/datasets/SD_CSV')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviBudgetLinesSplit')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DeltaTable",
+								"type": "DatasetReference"
+							},
+							"name": "JoinedBudgetLines"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference"
+							},
+							"name": "RegelsInitieel"
+						},
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference"
+							},
+							"name": "RegelsTotaal"
+						},
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference"
+							},
+							"name": "RegelsOvergedragen"
+						},
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference"
+							},
+							"name": "RegelsOverdracht"
+						},
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference"
+							},
+							"name": "RegelsMjp5"
+						},
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference"
+							},
+							"name": "RegelsMjp4"
+						},
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference"
+							},
+							"name": "RegelsMjp3"
+						},
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference"
+							},
+							"name": "RegelsMjp2"
+						},
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference"
+							},
+							"name": "RegelsMjp1"
+						},
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference"
+							},
+							"name": "RegelsMjp"
+						},
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference"
+							},
+							"name": "RegelsAmjp"
+						},
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference"
+							},
+							"name": "RegelsAanpassingen"
+						},
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference"
+							},
+							"name": "Regelswijzigingen"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AddPSCTotaal"
+						},
+						{
+							"name": "AddPSCWijzingen"
+						},
+						{
+							"name": "AddPSCAanpassingen"
+						},
+						{
+							"name": "AddPSCAmjp"
+						},
+						{
+							"name": "AddPSCMjp"
+						},
+						{
+							"name": "AddPSCMjp1"
+						},
+						{
+							"name": "AddPSCMjp2"
+						},
+						{
+							"name": "AddPSCMjp3"
+						},
+						{
+							"name": "AddPSCMjp4"
+						},
+						{
+							"name": "AddPSCMjp5"
+						},
+						{
+							"name": "AddPSCOverdracht"
+						},
+						{
+							"name": "AddPSCOvergedragen"
+						},
+						{
+							"name": "AddPSCInitieel"
+						}
+					],
+					"script": "source(output(\n\t\tJaar_opmaak as integer,\n\t\tAlgemene_rekening as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\tUF as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as double,\n\t\tTotaal as double,\n\t\tTotaal_wijz as double,\n\t\tTotaal_aanp as double,\n\t\tTotaal_raming as double,\n\t\tTotaal_amjp as double,\n\t\tBudget_mjp as double,\n\t\tBudget_mjp1 as double,\n\t\tBudget_mjp2 as double,\n\t\tBudget_mjp3 as double,\n\t\tBudget_mjp4 as double,\n\t\tBudget_mjp5 as double,\n\t\tOverdracht as double,\n\t\tOvergedragen as double,\n\t\tBeschikbaar as double,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string,\n\t\tBG_Omschrijving as string,\n\t\toperation as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> JoinedBudgetLines\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Initieel_', toString({Jaar_opmaak}))) ~> AddPSCTotaal\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Wijz_', toString({Jaar_opmaak}))) ~> AddPSCWijzingen\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Aanp_', toString({Jaar_opmaak}))) ~> AddPSCAanpassingen\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Amjp_', toString({Jaar_opmaak}))) ~> AddPSCAmjp\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Mjp_', toString({Jaar_opmaak}))) ~> AddPSCMjp\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Mjp_', toString(toInteger({Jaar_opmaak})+1))) ~> AddPSCMjp1\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Mjp_', toString(toInteger({Jaar_opmaak})+2))) ~> AddPSCMjp2\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Mjp_', toString(toInteger({Jaar_opmaak})+3))) ~> AddPSCMjp3\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Mjp_', toString(toInteger({Jaar_opmaak})+4))) ~> AddPSCMjp4\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Mjp_', toString(toInteger({Jaar_opmaak})+5))) ~> AddPSCMjp5\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Overdracht_', toString({Jaar_opmaak}))) ~> AddPSCOverdracht\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Overgedragen_', toString({Jaar_opmaak}))) ~> AddPSCOvergedragen\nJoinedBudgetLines derive(PeriodSliceCode = concat('Budget_Totaal_', toString({Jaar_opmaak}))) ~> AddPSCInitieel\nAddPSCInitieel sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Initieel,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t)) ~> RegelsInitieel\nAddPSCTotaal sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Totaal,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsTotaal\nAddPSCOvergedragen sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Overgedragen,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsOvergedragen\nAddPSCOverdracht sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Overdracht,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsOverdracht\nAddPSCMjp5 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Budget_mjp5,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsMjp5\nAddPSCMjp4 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Budget_mjp4,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsMjp4\nAddPSCMjp3 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Budget_mjp3,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsMjp3\nAddPSCMjp2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Budget_mjp2,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsMjp2\nAddPSCMjp1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Budget_mjp1,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsMjp1\nAddPSCMjp sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Budget_mjp,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsMjp\nAddPSCAmjp sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Totaal_amjp,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsAmjp\nAddPSCAanpassingen sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Totaal_aanp,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RegelsAanpassingen\nAddPSCWijzingen sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tFinancialID = Algemene_rekening,\n\t\tLineItemTypeCode = UF,\n\t\tProjectCode_1 = Actie,\n\t\tProjectCode_2 = Actieplan,\n\t\tProjectCode_3 = OD_Label,\n\t\tProjectCode_4 = SD_Label,\n\t\tProjectCode_5 = Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tProjectCode_10 = Groep,\n\t\tProjectCode_11 = Dienst,\n\t\tCode = Beleidsitem,\n\t\tDescription = Omschrijving,\n\t\tVersionDescription = BG_Omschrijving,\n\t\tAmount = Totaal_wijz,\n\t\tPeriodSliceCode,\n\t\tBookYear = Jaar_opmaak,\n\t\thash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Regelswijzigingen"
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

@@ -1,0 +1,2588 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADFppfCevi"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviGeboektCombine')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "VB_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "VB"
+						},
+						{
+							"dataset": {
+								"referenceName": "AP_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "AP"
+						},
+						{
+							"dataset": {
+								"referenceName": "OD_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "OD"
+						},
+						{
+							"dataset": {
+								"referenceName": "SD_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "SD"
+						},
+						{
+							"dataset": {
+								"referenceName": "BI_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "BI"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "FinancialImportData_nonbudget",
+								"type": "DatasetReference"
+							},
+							"name": "VBResults"
+						}
+					],
+					"transformations": [
+						{
+							"name": "TranslateVebruiktOntvangen"
+						},
+						{
+							"name": "VBAP"
+						},
+						{
+							"name": "VBAPOD"
+						},
+						{
+							"name": "VBAPODSD"
+						},
+						{
+							"name": "VBAPODSDBI"
+						},
+						{
+							"name": "FilterOnYearAndCodeGeboekt"
+						}
+					],
+					"script": "source(output(\n\t\tJaar as string,\n\t\tVolgnummer as string,\n\t\tCompany as string,\n\t\tDossier as string,\n\t\tBetalende as string,\n\t\t{Algemene rekening} as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\t{Bestelbon jaar} as string,\n\t\t{Bestelbon nummer} as string,\n\t\t{Aanwinst jaar} as string,\n\t\t{Aanwinst nummer} as string,\n\t\tCode as string,\n\t\tBedrag as string,\n\t\t{Verbruikt/Ontvangen} as string,\n\t\tOmschrijving as string,\n\t\tDatum as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\t{Faktuur jaar} as string,\n\t\t{Faktuur nummer} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> VB\nsource(output(\n\t\tJaar as string,\n\t\t{Strategische doelstelling} as string,\n\t\t{Operationele doelstelling} as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tCommentaar as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string,\n\t\tBudgethouder as string,\n\t\tAanvang as string,\n\t\tVoltooiing as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:['invoer/AP*.csv']) ~> AP\nsource(output(\n\t\tJaar as string,\n\t\t{Code strategische doelstelling} as string,\n\t\t{Label strategische doelstelling} as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tCommentaar as string,\n\t\tPrioritair as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> OD\nsource(output(\n\t\tBoekjaar as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tVerantwoordelijke as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> SD\nsource(output(\n\t\tBoekjaar as string,\n\t\tBeleidsitem as string,\n\t\tBeleidsveld as string,\n\t\tOmschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> BI\nFilterOnYearAndCodeGeboekt derive({Verbruikt/Ontvangen} = iif({Verbruikt/Ontvangen} === 'U', 'Charges', iif({Verbruikt/Ontvangen}==='O','Earnings','Unknown')),\n\t\tPeriodSliceCode = concat('Geboekt_',Jaar),\n\t\tFreeField03 = concat({Bestelbon jaar},'/',{Bestelbon nummer}),\n\t\tFreeField04 = concat({Aanwinst jaar},'/',{Aanwinst nummer}),\n\t\tFreeField05 = concat({Faktuur jaar},'/',{Faktuur nummer}),\n\t\tDocumentUrl = concat({Faktuur jaar},'/',{Faktuur nummer},'.pdf')) ~> TranslateVebruiktOntvangen\nTranslateVebruiktOntvangen, AP join(Actieplan == AP@Code\n\t&& VB@Jaar == AP@Jaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> VBAP\nVBAP, OD join({Operationele doelstelling} == OD@Label\n\t&& AP@Jaar == OD@Jaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> VBAPOD\nVBAPOD, SD join({Strategische doelstelling} == SD@Label\n\t&& AP@Jaar == Boekjaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> VBAPODSD\nVBAPODSD, BI join(VB@Beleidsitem == BI@Beleidsitem\n\t&& VB@Jaar == BI@Boekjaar,\n\tjoinType:'left',\n\tbroadcast: 'auto')~> VBAPODSDBI\nVB filter(!(Code ==='BAWD' || Code === 'BCOR')) ~> FilterOnYearAndCodeGeboekt\nVBAPODSDBI sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tPeriodSliceCode,\n\t\tFinancialID = {Algemene rekening},\n\t\tLineItemTypeCode = {Verbruikt/Ontvangen},\n\t\tAmount = Bedrag,\n\t\tProjectCode = Actie,\n\t\tProjectCode_1 = Actieplan,\n\t\tProjectCode_2 = OD@Label,\n\t\tProjectCode_3 = SD@Label,\n\t\tProjectCode_4 = Company,\n\t\tProjectCode_5 = VB@Budgethouder,\n\t\tProjectCode_6 = Investeringsproject,\n\t\tProjectCode_7 = Investeringssubproject,\n\t\tProjectCode_8 = Kostenplaats,\n\t\tProjectCode_9 = Sector,\n\t\tCode = VB@Beleidsitem,\n\t\tDescription = BI@Omschrijving,\n\t\tBookYear = VB@Jaar,\n\t\tBookDateTime = Datum,\n\t\tVersion = Volgnummer,\n\t\tVersionDescription = VB@Omschrijving,\n\t\tFreeField01 = Dossier,\n\t\tFreeField02 = Betalende,\n\t\tFreeField03,\n\t\tFreeField04,\n\t\tFreeField05,\n\t\tFreeField06 = VB@Code\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> VBResults"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviHierarchy')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "AR_CSV",
+								"type": "DatasetReference"
+							},
+							"name": "AR"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "HierarchyJSON",
+								"type": "DatasetReference"
+							},
+							"name": "CeviHierarchySink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterOnCurrentYear"
+						},
+						{
+							"name": "AdditionalColumns"
+						}
+					],
+					"script": "source(output(\n\t\tBoekjaar as integer,\n\t\t{Algemene rekening} as string,\n\t\tOmschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\twildcardPaths:['invoer/AR*.csv']) ~> AR\nAR filter(Boekjaar > (year(currentDate())-1)) ~> FilterOnCurrentYear\nFilterOnCurrentYear derive(Hierarchy = '$default',\n\t\tGroupCode = iif(\n    (startsWith({Algemene rekening},'6') || startsWith({Algemene rekening},'7')) && !startsWith({Algemene rekening},'664'),\n    'Exploitatie',\n    iif(\n        (startsWith({Algemene rekening},'150') || startsWith({Algemene rekening},'178')|| startsWith({Algemene rekening},'2')|| startsWith({Algemene rekening},'495')|| startsWith({Algemene rekening},'664')) \n        && \n        !startsWith({Algemene rekening},'2903') && !startsWith({Algemene rekening},'2904') && !startsWith({Algemene rekening},'2905') ,\n        'Investering',\n        iif(\n            (startsWith({Algemene rekening},'10')||startsWith({Algemene rekening},'158')||startsWith({Algemene rekening},'17')||startsWith({Algemene rekening},'2903')||startsWith({Algemene rekening},'2904')||startsWith({Algemene rekening},'2905')||startsWith({Algemene rekening},'4')\n            &&\n            !startsWith({Algemene rekening},'176')\n            &&\n            !startsWith({Algemene rekening},'495')\n            ),\n            'Financiering',\n            ''\n        )\n    )\n)) ~> AdditionalColumns\nAdditionalColumns sink(input(\n\t\tBookYear as string,\n\t\tFinancialID as string,\n\t\tHierarchy as string,\n\t\tGroupCode as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tBookYear = Boekjaar,\n\t\tFinancialID = {Algemene rekening},\n\t\tHierarchy,\n\t\tGroupCode\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> CeviHierarchySink"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FillDeltaTable')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "TempCombinedBudget",
+								"type": "DatasetReference"
+							},
+							"name": "NewBudgetCombined"
+						},
+						{
+							"dataset": {
+								"referenceName": "CombinedBudgetLinesTable",
+								"type": "DatasetReference"
+							},
+							"name": "CurrentBudgetCombined"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DeltaTable",
+								"type": "DatasetReference"
+							},
+							"name": "SinkNewToDelta"
+						},
+						{
+							"dataset": {
+								"referenceName": "DeltaTable",
+								"type": "DatasetReference"
+							},
+							"name": "SinkDeletedToDelta"
+						},
+						{
+							"dataset": {
+								"referenceName": "DeltaTable",
+								"type": "DatasetReference"
+							},
+							"name": "SinkUpdatedToDelta"
+						}
+					],
+					"transformations": [
+						{
+							"name": "CheckForNewLines"
+						},
+						{
+							"name": "AddCreateOperation"
+						},
+						{
+							"name": "CheckForDeletedLines"
+						},
+						{
+							"name": "SetAmountsToZero"
+						},
+						{
+							"name": "CheckForChangedLines"
+						},
+						{
+							"name": "AddUpdateOperation"
+						},
+						{
+							"name": "AlterRow1"
+						},
+						{
+							"name": "AlterRow2"
+						}
+					],
+					"script": "source(output(\n\t\tJaar_opmaak as integer,\n\t\tAlgemene_rekening as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\tUF as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as double,\n\t\tTotaal as double,\n\t\tTotaal_wijz as double,\n\t\tTotaal_aanp as double,\n\t\tTotaal_raming as double,\n\t\tTotaal_amjp as double,\n\t\tBudget_mjp as double,\n\t\tBudget_mjp1 as double,\n\t\tBudget_mjp2 as double,\n\t\tBudget_mjp3 as double,\n\t\tBudget_mjp4 as double,\n\t\tBudget_mjp5 as double,\n\t\tOverdracht as double,\n\t\tOvergedragen as double,\n\t\tBeschikbaar as double,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string,\n\t\tBG_Omschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> NewBudgetCombined\nsource(output(\n\t\tJaar_opmaak as integer,\n\t\tAlgemene_rekening as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\tUF as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as double,\n\t\tTotaal as double,\n\t\tTotaal_wijz as double,\n\t\tTotaal_aanp as double,\n\t\tTotaal_raming as double,\n\t\tTotaal_amjp as double,\n\t\tBudget_mjp as double,\n\t\tBudget_mjp1 as double,\n\t\tBudget_mjp2 as double,\n\t\tBudget_mjp3 as double,\n\t\tBudget_mjp4 as double,\n\t\tBudget_mjp5 as double,\n\t\tOverdracht as double,\n\t\tOvergedragen as double,\n\t\tBeschikbaar as double,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string,\n\t\tBG_Omschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> CurrentBudgetCombined\nNewBudgetCombined, CurrentBudgetCombined exists(NewBudgetCombined@hash == CurrentBudgetCombined@hash,\n\tnegate:true,\n\tbroadcast: 'auto')~> CheckForNewLines\nCheckForNewLines derive(operation = 'create') ~> AddCreateOperation\nCurrentBudgetCombined, NewBudgetCombined exists(CurrentBudgetCombined@hash == NewBudgetCombined@hash,\n\tnegate:true,\n\tbroadcast: 'auto')~> CheckForDeletedLines\nCheckForDeletedLines derive(Initieel = 0,\n\t\tTotaal = 0,\n\t\tTotaal_wijz = 0,\n\t\tTotaal_aanp = 0,\n\t\tTotaal_raming = 0,\n\t\tTotaal_amjp = 0,\n\t\tBudget_mjp = 0,\n\t\tBudget_mjp1 = 0,\n\t\tBudget_mjp2 = 0,\n\t\tBudget_mjp3 = 0,\n\t\tBudget_mjp4 = 0,\n\t\tBudget_mjp5 = 0,\n\t\tOverdracht = 0,\n\t\tOvergedragen = 0,\n\t\tBeschikbaar = 0,\n\t\toperation = 'update') ~> SetAmountsToZero\nNewBudgetCombined, CurrentBudgetCombined exists(CurrentBudgetCombined@hash == NewBudgetCombined@hash &&\n(NewBudgetCombined@Initieel != CurrentBudgetCombined@Initieel ||\nNewBudgetCombined@Totaal != CurrentBudgetCombined@Totaal ||\nNewBudgetCombined@Totaal_wijz != CurrentBudgetCombined@Totaal_wijz ||\nNewBudgetCombined@Totaal_aanp != CurrentBudgetCombined@Totaal_aanp ||\nNewBudgetCombined@Totaal_raming != CurrentBudgetCombined@Totaal_raming ||\nNewBudgetCombined@Totaal_amjp != CurrentBudgetCombined@Totaal_amjp ||\nNewBudgetCombined@Budget_mjp != CurrentBudgetCombined@Budget_mjp ||\nNewBudgetCombined@Budget_mjp1 != CurrentBudgetCombined@Budget_mjp1 ||\nNewBudgetCombined@Budget_mjp2 != CurrentBudgetCombined@Budget_mjp2 ||\nNewBudgetCombined@Budget_mjp3 != CurrentBudgetCombined@Budget_mjp3 ||\nNewBudgetCombined@Budget_mjp4 != CurrentBudgetCombined@Budget_mjp4 ||\nNewBudgetCombined@Budget_mjp5 != CurrentBudgetCombined@Budget_mjp5 ||\nNewBudgetCombined@Overdracht != CurrentBudgetCombined@Overdracht ||\nNewBudgetCombined@Overgedragen != CurrentBudgetCombined@Overgedragen),\n\tnegate:false,\n\tbroadcast: 'auto')~> CheckForChangedLines\nCheckForChangedLines derive(operation = 'update') ~> AddUpdateOperation\nAddCreateOperation alterRow(upsertIf(true())) ~> AlterRow1\nAddUpdateOperation alterRow(upsertIf(true())) ~> AlterRow2\nAlterRow1 sink(input(\n\t\tJaar_opmaak as integer,\n\t\tAlgemene_rekening as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\tUF as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as double,\n\t\tTotaal as double,\n\t\tTotaal_wijz as double,\n\t\tTotaal_aanp as double,\n\t\tTotaal_raming as double,\n\t\tTotaal_amjp as double,\n\t\tBudget_mjp as double,\n\t\tBudget_mjp1 as double,\n\t\tBudget_mjp2 as double,\n\t\tBudget_mjp3 as double,\n\t\tBudget_mjp4 as double,\n\t\tBudget_mjp5 as double,\n\t\tOverdracht as double,\n\t\tOvergedragen as double,\n\t\tBeschikbaar as double,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string,\n\t\tBG_Omschrijving as string,\n\t\toperation as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['hash'],\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SinkNewToDelta\nSetAmountsToZero sink(input(\n\t\tJaar_opmaak as integer,\n\t\tAlgemene_rekening as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\tUF as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as double,\n\t\tTotaal as double,\n\t\tTotaal_wijz as double,\n\t\tTotaal_aanp as double,\n\t\tTotaal_raming as double,\n\t\tTotaal_amjp as double,\n\t\tBudget_mjp as double,\n\t\tBudget_mjp1 as double,\n\t\tBudget_mjp2 as double,\n\t\tBudget_mjp3 as double,\n\t\tBudget_mjp4 as double,\n\t\tBudget_mjp5 as double,\n\t\tOverdracht as double,\n\t\tOvergedragen as double,\n\t\tBeschikbaar as double,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string,\n\t\tBG_Omschrijving as string,\n\t\toperation as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SinkDeletedToDelta\nAlterRow2 sink(input(\n\t\tJaar_opmaak as integer,\n\t\tAlgemene_rekening as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\tUF as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as double,\n\t\tTotaal as double,\n\t\tTotaal_wijz as double,\n\t\tTotaal_aanp as double,\n\t\tTotaal_raming as double,\n\t\tTotaal_amjp as double,\n\t\tBudget_mjp as double,\n\t\tBudget_mjp1 as double,\n\t\tBudget_mjp2 as double,\n\t\tBudget_mjp3 as double,\n\t\tBudget_mjp4 as double,\n\t\tBudget_mjp5 as double,\n\t\tOverdracht as double,\n\t\tOvergedragen as double,\n\t\tBeschikbaar as double,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string,\n\t\tBG_Omschrijving as string,\n\t\toperation as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['hash'],\n\tformat: 'table',\n\tmapColumn(\n\t\tJaar_opmaak,\n\t\tAlgemene_rekening,\n\t\tBeleidsitem,\n\t\tKostenplaats,\n\t\tInvesteringsproject,\n\t\tInvesteringssubproject,\n\t\tActieplan,\n\t\tActie,\n\t\tCompany,\n\t\tUF,\n\t\tOmschrijving,\n\t\tBudgethouder,\n\t\tSector,\n\t\tGroep,\n\t\tDienst,\n\t\tInitieel,\n\t\tTotaal,\n\t\tTotaal_wijz,\n\t\tTotaal_aanp,\n\t\tTotaal_raming,\n\t\tTotaal_amjp,\n\t\tBudget_mjp,\n\t\tBudget_mjp1,\n\t\tBudget_mjp2,\n\t\tBudget_mjp3,\n\t\tBudget_mjp4,\n\t\tBudget_mjp5,\n\t\tOverdracht,\n\t\tOvergedragen,\n\t\tBeschikbaar,\n\t\tCode,\n\t\tSD_Label,\n\t\tOD_Label,\n\t\tBeleidsveld,\n\t\thash,\n\t\tBG_Omschrijving,\n\t\toperation\n\t),\n\terrorHandlingOption: 'stopOnFirstError') ~> SinkUpdatedToDelta"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ProcessDeltaSuccess')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DeltaTable",
+								"type": "DatasetReference"
+							},
+							"name": "deltatable"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "CombinedBudgetLinesTable",
+								"type": "DatasetReference"
+							},
+							"name": "SinkUpdatesIntoCurrent"
+						},
+						{
+							"dataset": {
+								"referenceName": "CombinedBudgetLinesTable",
+								"type": "DatasetReference"
+							},
+							"name": "SinkNewIntoCurrent"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterUpdates"
+						},
+						{
+							"name": "FilterNew"
+						},
+						{
+							"name": "AlterRow1"
+						}
+					],
+					"script": "source(output(\n\t\tJaar_opmaak as integer,\n\t\tAlgemene_rekening as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\tUF as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as double,\n\t\tTotaal as double,\n\t\tTotaal_wijz as double,\n\t\tTotaal_aanp as double,\n\t\tTotaal_raming as double,\n\t\tTotaal_amjp as double,\n\t\tBudget_mjp as double,\n\t\tBudget_mjp1 as double,\n\t\tBudget_mjp2 as double,\n\t\tBudget_mjp3 as double,\n\t\tBudget_mjp4 as double,\n\t\tBudget_mjp5 as double,\n\t\tOverdracht as double,\n\t\tOvergedragen as double,\n\t\tBeschikbaar as double,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string,\n\t\tBG_Omschrijving as string,\n\t\toperation as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> deltatable\ndeltatable filter(operation == 'update') ~> FilterUpdates\ndeltatable filter(operation == 'create') ~> FilterNew\nFilterUpdates alterRow(updateIf(true())) ~> AlterRow1\nAlterRow1 sink(input(\n\t\tJaar_opmaak as integer,\n\t\tAlgemene_rekening as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\tUF as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as double,\n\t\tTotaal as double,\n\t\tTotaal_wijz as double,\n\t\tTotaal_aanp as double,\n\t\tTotaal_raming as double,\n\t\tTotaal_amjp as double,\n\t\tBudget_mjp as double,\n\t\tBudget_mjp1 as double,\n\t\tBudget_mjp2 as double,\n\t\tBudget_mjp3 as double,\n\t\tBudget_mjp4 as double,\n\t\tBudget_mjp5 as double,\n\t\tOverdracht as double,\n\t\tOvergedragen as double,\n\t\tBeschikbaar as double,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string,\n\t\tBG_Omschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['hash'],\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SinkUpdatesIntoCurrent\nFilterNew sink(input(\n\t\tJaar_opmaak as integer,\n\t\tAlgemene_rekening as string,\n\t\tBeleidsitem as string,\n\t\tKostenplaats as string,\n\t\tInvesteringsproject as string,\n\t\tInvesteringssubproject as string,\n\t\tActieplan as string,\n\t\tActie as string,\n\t\tCompany as string,\n\t\tUF as string,\n\t\tOmschrijving as string,\n\t\tBudgethouder as string,\n\t\tSector as string,\n\t\tGroep as string,\n\t\tDienst as string,\n\t\tInitieel as double,\n\t\tTotaal as double,\n\t\tTotaal_wijz as double,\n\t\tTotaal_aanp as double,\n\t\tTotaal_raming as double,\n\t\tTotaal_amjp as double,\n\t\tBudget_mjp as double,\n\t\tBudget_mjp1 as double,\n\t\tBudget_mjp2 as double,\n\t\tBudget_mjp3 as double,\n\t\tBudget_mjp4 as double,\n\t\tBudget_mjp5 as double,\n\t\tOverdracht as double,\n\t\tOvergedragen as double,\n\t\tBeschikbaar as double,\n\t\tCode as string,\n\t\tSD_Label as string,\n\t\tOD_Label as string,\n\t\tBeleidsveld as string,\n\t\thash as string,\n\t\tBG_Omschrijving as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SinkNewIntoCurrent"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviAanwending')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "PrepareAanwendingData",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CeviAanwendingCombine",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"VB": {},
+									"AP": {},
+									"OD": {},
+									"SD": {},
+									"BI": {},
+									"VBResults": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-01-19T17:27:02Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviBudgetCombine')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "SinkCombinedIntoTemp",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "CeviBudgetLinesCombine",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "temp",
+									"wildcardFileName": "tempcombinedbudgetlines*.csv",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"preCopyScript": "TRUNCATE TABLE [dbo].[deltacombinedbudget]",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "Jaar opmaak",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Jaar_opmaak",
+											"type": "Int32",
+											"physicalType": "int"
+										}
+									},
+									{
+										"source": {
+											"name": "Algemene rekening",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Algemene_rekening",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Beleidsitem",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Beleidsitem",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Kostenplaats",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Kostenplaats",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Investeringsproject",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Investeringsproject",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Investeringssubproject",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Investeringssubproject",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Actieplan",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Actieplan",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Actie",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Actie",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Company",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Company",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "U/F",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "UF",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Omschrijving",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Omschrijving",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Budgethouder",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Budgethouder",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Sector",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Sector",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Groep",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Groep",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Dienst",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Dienst",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Initieel",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Initieel",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Totaal",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Totaal",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Totaal wijz",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Totaal_wijz",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Totaal aanp",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Totaal_aanp",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Totaal raming",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Totaal_raming",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Totaal amjp",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Totaal_amjp",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Budget mjp",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Budget_mjp",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Budget mjp1",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Budget_mjp1",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Budget mjp2",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Budget_mjp2",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Budget mjp3",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Budget_mjp3",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Budget mjp4",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Budget_mjp4",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Budget mjp5",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Budget_mjp5",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Overdracht",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Overdracht",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Overgedragen",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Overgedragen",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Beschikbaar",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Beschikbaar",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "Code",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Code",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "SD_Label",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "SD_Label",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "OD_Label",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "OD_Label",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Beleidsveld",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Beleidsveld",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "hash",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "hash",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "BG_Omschrijving",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "BG_Omschrijving",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "BudgetJoinTMP",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "TempCombinedBudget",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "FindDeltas",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "SinkCombinedIntoTemp",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "FillDeltaTable",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"NewBudgetCombined": {},
+									"CurrentBudgetCombined": {},
+									"SinkNewToDelta": {},
+									"SinkDeletedToDelta": {},
+									"SinkUpdatedToDelta": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "CeviBudgetLinesCombine",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "ClearBudgetLinesCombined",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CeviBudgetLinesCombine",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"BG": {},
+									"OD": {},
+									"SD": {},
+									"BI": {},
+									"AP": {},
+									"RegelsTotaal": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "ClearBudgetLinesCombined",
+						"type": "Delete",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "BudgetJoinTMP",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"wildcardFileName": "tempcombinedbudgetlines*.csv",
+								"enablePartitionDiscovery": false
+							}
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-01-19T13:51:37Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/FillDeltaTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviBudgetSplit')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CeviSplitBudgetLines",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CeviBudgetLinesSplit",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"JoinedBudgetLines": {},
+									"RegelsInitieel": {},
+									"RegelsTotaal": {},
+									"RegelsOvergedragen": {},
+									"RegelsOverdracht": {},
+									"RegelsMjp5": {},
+									"RegelsMjp4": {},
+									"RegelsMjp3": {},
+									"RegelsMjp2": {},
+									"RegelsMjp1": {},
+									"RegelsMjp": {},
+									"RegelsAmjp": {},
+									"RegelsAanpassingen": {},
+									"Regelswijzigingen": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-01-12T12:37:13Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviDeltaProcessSuccess')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ProcessDeltaSuccess",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "ProcessDeltaSuccess",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"deltatable": {},
+									"SinkUpdatesIntoCurrent": {},
+									"SinkNewIntoCurrent": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-01-15T12:57:47Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/ProcessDeltaSuccess')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviGeboekt')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "PrepareGeboektData",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CeviGeboektCombine",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"VB": {},
+									"AP": {},
+									"OD": {},
+									"SD": {},
+									"BI": {},
+									"VBResults": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-01-19T18:18:22Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/CeviGeboektCombine')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviHierarchyETL')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CeviHierarchySendToPPF",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "CeviHierarchy",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "Hierarchy",
+									"wildcardFileName": "*.json",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"sink": {
+								"type": "RestSink",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": 10,
+								"requestMethod": "POST",
+								"writeBatchSize": 10000,
+								"httpCompressionType": "none"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "$['BookYear']"
+										},
+										"sink": {
+											"path": "$['BookYear']"
+										}
+									},
+									{
+										"source": {
+											"path": "$['FinancialID']"
+										},
+										"sink": {
+											"path": "$['FinancialID']"
+										}
+									},
+									{
+										"source": {
+											"path": "$['Hierarchy']"
+										},
+										"sink": {
+											"path": "$['Hierarchy']"
+										}
+									},
+									{
+										"source": {
+											"path": "$['GroupCode']"
+										},
+										"sink": {
+											"path": "$['GroupCode']"
+										}
+									}
+								],
+								"collectionReference": ""
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "HierarchyJSON",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "PepperflowAPI_Hierarchy",
+								"type": "DatasetReference",
+								"parameters": {
+									"APIKey": "f9e04968-0af1-46eb-8b12-19518e674f8c"
+								}
+							}
+						]
+					},
+					{
+						"name": "CeviHierarchy",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "DeleteHierarchy",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CeviHierarchy",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"AR": {},
+									"CeviHierarchySink": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "DeleteHierarchy",
+						"type": "Delete",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "HierarchyJSON",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-01-20T19:14:07Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/CeviHierarchy')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviTaskGroupETL')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CeviAlgemeneRekening",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "DeleteOldData",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CeviAlgemeneRekening",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"AR": {},
+									"SinkToTaskGroupResults": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "CeviTaskGroupSendToPPF",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "CeviAlgemeneRekening",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "CeviActie",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "CeviActieplan",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "CeviBeleidsdomein",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "TaskGroup",
+									"wildcardFileName": "*.json",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"sink": {
+								"type": "RestSink",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": 10,
+								"requestMethod": "POST",
+								"writeBatchSize": 10000,
+								"httpCompressionType": "none"
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "TaskGroupResults",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "PepperflowAPI_TaskGroup",
+								"type": "DatasetReference",
+								"parameters": {
+									"APIKey": "7381028d-59ea-4c80-a4c1-9b93b63d3f99"
+								}
+							}
+						]
+					},
+					{
+						"name": "DeleteOldData",
+						"type": "Delete",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "TaskGroupResults",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "CeviActie",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "DeleteOldData",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CeviActie",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"AC": {},
+									"SinkToTaskGroup": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "CeviActieplan",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "DeleteOldData",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Actieplan",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"AP": {},
+									"SinkToTaskGroup": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "CeviBeleidsdomein",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "DeleteOldData",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CeviBeleidsdomein",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"BD": {},
+									"SinkToTaskGroupResults": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-01-20T19:10:50Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviBudgetTestDelta')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CeviBudgetCombine",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "CeviBudgetCombine",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "CeviBudgetSplit",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "CeviBudgetCombine",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "CeviBudgetSplit",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "CeviSendBudgetData",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "CeviBudgetSplit",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "uitvoer",
+									"wildcardFileName": "*.csv",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "RestSink",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": 10,
+								"requestMethod": "POST",
+								"writeBatchSize": 10000,
+								"httpCompressionType": "none"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "PeriodSliceCode",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['PeriodSliceCode']"
+										}
+									},
+									{
+										"source": {
+											"name": "FinancialID",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FinancialID']"
+										}
+									},
+									{
+										"source": {
+											"name": "LineItemTypeCode",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['LineItemTypeCode']"
+										}
+									},
+									{
+										"source": {
+											"name": "Amount",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['Amount']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_1",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_1']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_2",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_2']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_3",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_3']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_4",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_4']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_5",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_5']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_6",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_6']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_7",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_7']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_8",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_8']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_9",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_9']"
+										}
+									},
+									{
+										"source": {
+											"name": "Code",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['Code']"
+										}
+									},
+									{
+										"source": {
+											"name": "Description",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['Description']"
+										}
+									},
+									{
+										"source": {
+											"name": "BookYear",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['BookYear']"
+										}
+									},
+									{
+										"source": {
+											"name": "BookDateTime",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['BookDateTime']"
+										}
+									},
+									{
+										"source": {
+											"name": "Version",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['Version']"
+										}
+									},
+									{
+										"source": {
+											"name": "VersionDescription",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['VersionDescription']"
+										}
+									},
+									{
+										"source": {
+											"name": "FreeField01",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FreeField01']"
+										}
+									},
+									{
+										"source": {
+											"name": "FreeField02",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FreeField02']"
+										}
+									},
+									{
+										"source": {
+											"name": "FreeField03",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FreeField03']"
+										}
+									},
+									{
+										"source": {
+											"name": "FreeField04",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FreeField04']"
+										}
+									},
+									{
+										"source": {
+											"name": "FreeField05",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FreeField05']"
+										}
+									},
+									{
+										"source": {
+											"name": "FreeField06",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FreeField06']"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "PepperflowAPI_FinancialData",
+								"type": "DatasetReference",
+								"parameters": {
+									"APIKey": "0daed34d-f1ba-448f-81d2-2d643ce6cf1b"
+								}
+							}
+						]
+					},
+					{
+						"name": "CeviProcessDeltaSuccess",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "CeviSendBudgetData",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "CeviDeltaProcessSuccess",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"variables": {
+					"timestamp": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2021-01-19T16:01:42Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/CeviBudgetCombine')]",
+				"[concat(variables('factoryId'), '/pipelines/CeviBudgetSplit')]",
+				"[concat(variables('factoryId'), '/pipelines/CeviDeltaProcessSuccess')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CeviFinancialDataETL')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CeviBudgetCombine",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "ClearUitvoer",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "CeviBudgetCombine",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "CeviBudgetSplit",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "CeviBudgetCombine",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "CeviBudgetSplit",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ClearUitvoer",
+						"type": "Delete",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"wildcardFileName": "*.csv",
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "CeviAanwending",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "ClearUitvoer",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "CeviAanwending",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "CeviGeboekt",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "ClearUitvoer",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "CeviGeboekt",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "CeviSendNonBudgetData",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "CeviAanwending",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "CeviGeboekt",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFileName": "*.csv",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "RestSink",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": 10,
+								"requestMethod": "POST",
+								"writeBatchSize": 10000,
+								"httpCompressionType": "none"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "PeriodSliceCode",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['PeriodSliceCode']"
+										}
+									},
+									{
+										"source": {
+											"name": "FinancialID",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FinancialID']"
+										}
+									},
+									{
+										"source": {
+											"name": "LineItemTypeCode",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['LineItemTypeCode']"
+										}
+									},
+									{
+										"source": {
+											"name": "Amount",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['Amount']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_1",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_1']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_2",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_2']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_3",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_3']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_4",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_4']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_5",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_5']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_6",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_6']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_7",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_7']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_8",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_8']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_9",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_9']"
+										}
+									},
+									{
+										"source": {
+											"name": "Code",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['Code']"
+										}
+									},
+									{
+										"source": {
+											"name": "Description",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['Description']"
+										}
+									},
+									{
+										"source": {
+											"name": "BookYear",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['BookYear']"
+										}
+									},
+									{
+										"source": {
+											"name": "BookDateTime",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['BookDateTime']"
+										}
+									},
+									{
+										"source": {
+											"name": "Version",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['Version']"
+										}
+									},
+									{
+										"source": {
+											"name": "VersionDescription",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['VersionDescription']"
+										}
+									},
+									{
+										"source": {
+											"name": "FreeField01",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FreeField01']"
+										}
+									},
+									{
+										"source": {
+											"name": "FreeField02",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FreeField02']"
+										}
+									},
+									{
+										"source": {
+											"name": "FreeField03",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FreeField03']"
+										}
+									},
+									{
+										"source": {
+											"name": "FreeField04",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FreeField04']"
+										}
+									},
+									{
+										"source": {
+											"name": "FreeField05",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FreeField05']"
+										}
+									},
+									{
+										"source": {
+											"name": "FreeField06",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FreeField06']"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "FinancialImportData_nonbudget",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "PepperflowAPI_FinancialData",
+								"type": "DatasetReference",
+								"parameters": {
+									"APIKey": "0daed34d-f1ba-448f-81d2-2d643ce6cf1b"
+								}
+							}
+						]
+					},
+					{
+						"name": "CeviSendBudgetData",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "CeviBudgetSplit",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "uitvoer",
+									"wildcardFileName": "*.csv",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "RestSink",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": 10,
+								"requestMethod": "POST",
+								"writeBatchSize": 10000,
+								"httpCompressionType": "none"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "FinancialID",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['FinancialID']"
+										}
+									},
+									{
+										"source": {
+											"name": "LineItemTypeCode",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['LineItemTypeCode']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_1",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_1']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_2",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_2']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_3",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_3']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_4",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_4']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_5",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_5']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_6",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_6']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_7",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_7']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_8",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_8']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_9",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_9']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_10",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_10']"
+										}
+									},
+									{
+										"source": {
+											"name": "ProjectCode_11",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['ProjectCode_11']"
+										}
+									},
+									{
+										"source": {
+											"name": "Code",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['Code']"
+										}
+									},
+									{
+										"source": {
+											"name": "Description",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['Description']"
+										}
+									},
+									{
+										"source": {
+											"name": "VersionDescription",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['VersionDescription']"
+										}
+									},
+									{
+										"source": {
+											"name": "Amount",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['Amount']"
+										}
+									},
+									{
+										"source": {
+											"name": "PeriodSliceCode",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['PeriodSliceCode']"
+										}
+									},
+									{
+										"source": {
+											"name": "BookYear",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['BookYear']"
+										}
+									},
+									{
+										"source": {
+											"name": "hash",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['hash']"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "FinancialImportData",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "PepperflowAPI_FinancialData",
+								"type": "DatasetReference",
+								"parameters": {
+									"APIKey": "0daed34d-f1ba-448f-81d2-2d643ce6cf1b"
+								}
+							}
+						]
+					},
+					{
+						"name": "CeviProcessDeltaSuccess",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "CeviSendBudgetData",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "CeviDeltaProcessSuccess",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"variables": {
+					"APIKey": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2021-01-19T18:50:14Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/CeviBudgetCombine')]",
+				"[concat(variables('factoryId'), '/pipelines/CeviBudgetSplit')]",
+				"[concat(variables('factoryId'), '/pipelines/CeviAanwending')]",
+				"[concat(variables('factoryId'), '/pipelines/CeviGeboekt')]",
+				"[concat(variables('factoryId'), '/pipelines/CeviDeltaProcessSuccess')]"
+			]
+		}
+	]
+}
