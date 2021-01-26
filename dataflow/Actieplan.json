@@ -24,9 +24,12 @@
 			"transformations": [
 				{
 					"name": "DerivedColumn1"
+				},
+				{
+					"name": "FilterOnYear"
 				}
 			],
-			"script": "source(output(\n\t\tJaar as string,\n\t\t{Strategische doelstelling} as string,\n\t\t{Operationele doelstelling} as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tCommentaar as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string,\n\t\tBudgethouder as string,\n\t\tAanvang as string,\n\t\tVoltooiing as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> AP\nAP derive(Cluster1 = 'Actieplan',\n\t\tTaskgroup = concat(Code,' ',{Korte omschrijving}),\n\t\tRole1 = 'Verantwoordelijke',\n\t\tRole2 = 'Opvolger',\n\t\tRole3 = 'Budgethouder') ~> DerivedColumn1\nDerivedColumn1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tCluster1,\n\t\tTaskgroupGlobalID = Code,\n\t\tProjectCode = Code,\n\t\tTaskgroup,\n\t\tRole1,\n\t\tRole1UserGlobalIDs = Verantwoordelijke,\n\t\tRole2,\n\t\tRole2UserGlobalIDs = Opvolger,\n\t\tRole3,\n\t\tRole3UserGlobalIDs = Budgethouder\n\t)) ~> SinkToTaskGroup"
+			"script": "source(output(\n\t\tJaar as string,\n\t\t{Strategische doelstelling} as string,\n\t\t{Operationele doelstelling} as string,\n\t\tCode as string,\n\t\tLabel as string,\n\t\t{Korte omschrijving} as string,\n\t\t{Lange omschrijving} as string,\n\t\tCommentaar as string,\n\t\tVerantwoordelijke as string,\n\t\tOpvolger as string,\n\t\tBudgethouder as string,\n\t\tAanvang as string,\n\t\tVoltooiing as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> AP\nFilterOnYear derive(Cluster1 = 'Actieplan',\n\t\tTaskgroup = concat(Code,' ',{Korte omschrijving}),\n\t\tRole1 = 'Verantwoordelijke',\n\t\tRole2 = 'Opvolger',\n\t\tRole3 = 'Budgethouder') ~> DerivedColumn1\nAP filter(toInteger(Jaar) == year(currentDate())  ) ~> FilterOnYear\nDerivedColumn1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tCluster1,\n\t\tTaskgroupGlobalID = Code,\n\t\tProjectCode = Code,\n\t\tTaskgroup,\n\t\tRole1,\n\t\tRole1UserGlobalIDs = Verantwoordelijke,\n\t\tRole2,\n\t\tRole2UserGlobalIDs = Opvolger,\n\t\tRole3,\n\t\tRole3UserGlobalIDs = Budgethouder\n\t)) ~> SinkToTaskGroup"
 		}
 	}
 }
