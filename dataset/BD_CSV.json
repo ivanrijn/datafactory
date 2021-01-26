@@ -1,0 +1,32 @@
+{
+	"name": "BD_CSV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzurePPFBlobStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"folderPath": "TaskGroupCSV",
+				"container": "ppfcontainerdenderleeuw"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			}
+		]
+	}
+}

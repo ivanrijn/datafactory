@@ -54,6 +54,12 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "CeviBeleidsdomein",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"policy": {
@@ -182,6 +188,37 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "Actieplan",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "CeviBeleidsdomein",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "DeleteOldData",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "CeviBeleidsdomein",
 						"type": "DataFlowReference"
 					},
 					"compute": {
